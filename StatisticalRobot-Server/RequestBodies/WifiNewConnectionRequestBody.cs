@@ -1,6 +1,4 @@
 
-using System.ComponentModel.DataAnnotations;
-
 class WifiNewConnectionRequestBody
 {
     public string? SSID {get; set;}

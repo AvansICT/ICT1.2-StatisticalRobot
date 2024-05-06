@@ -42,4 +42,13 @@ app.MapGet("/wifi/saved", async () =>
     return Results.Ok(savedList);
 });
 
+app.MapPost("/wifi/change_active", async (WifiChangeActiveRequestBody body) => 
+{
+    if(body.WifiUuid == Guid.Empty)
+        return Results.BadRequest("Wifi uuid is not allowed to be empty");
+    
+    await NetworkManager.ChangeActiveNetwork(body.WifiUuid);
+    return Results.Ok();
+});
+
 app.Run();

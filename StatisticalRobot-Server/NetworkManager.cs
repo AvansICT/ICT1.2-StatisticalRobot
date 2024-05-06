@@ -146,6 +146,18 @@ internal class NetworkManager
             .ToList();
     }
 
+    public static async Task ChangeActiveNetwork(Guid networkUuid) 
+    {
+        await Cli.Wrap("nmcli")
+            .WithArguments(args => 
+            {
+                args.Add("c")
+                    .Add("up")
+                    .Add(networkUuid.ToString());
+            })
+            .ExecuteAsync();
+    }
+
     private static AvailableWifiNetwork ParseAvailableNetworkLine(string line)
     {
         // line Format: {ssid:string}:{in-use:' '|'*'}:{signal:int}:{security:string[], space seperated}
