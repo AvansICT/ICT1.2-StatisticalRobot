@@ -36,4 +36,10 @@ app.MapPost("/wifi/new_connection", async (WifiNewConnectionRequestBody body) =>
     );
 });
 
+app.MapGet("/wifi/saved", async () => 
+{
+    var savedList = await NetworkManager.GetSavedWifiNetworksAsync();
+    return Results.Ok(savedList);
+});
+
 app.Run();
