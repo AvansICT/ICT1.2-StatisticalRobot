@@ -3,6 +3,50 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<RobotDiscoveryService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<RobotDiscoveryService>());
 
+// Known fire and forget, shouldn't matter too much if this fails
+var hotspotTask = Task.Run(async () => 
+{
+    try 
+    {
+        System.Console.WriteLine("[Hotspot] Starting hotspot check...");
+
+        // Force wifi scanning
+        await NetworkManager.GetAvailableWifiNetworksAsync();
+
+        List<SavedWifiNetwork> savedNetworks = await NetworkManager.GetSavedWifiNetworksAsync();
+        if(savedNetworks.Any(n => n.IsActive))
+        {
+            System.Console.WriteLine("[Hotspot] Wifi already connected!");
+            return;
+        }
+
+        System.Console.WriteLine("[Hotspot] Waiting for wifi to connect...");
+
+        // Give the pi 10 seconds to connect
+        await Task.Delay(TimeSpan.FromSeconds(10));
+
+        System.Console.WriteLine("[Hotspot] Checking if connected to wifi...");
+
+        // Get all networks, check if any of the networks is active (connected)
+        savedNetworks = await NetworkManager.GetSavedWifiNetworksAsync();
+        if(!savedNetworks.Any(n => n.IsActive))
+        {
+            System.Console.WriteLine("[Hotspot] Wifi not connected, activating backup hotspot!");
+
+            // Start backup hotspot
+            await NetworkManager.ActivateBackupHotspot();
+        }
+        else
+        {
+            System.Console.WriteLine("[Hotspot] Wifi already connected!");
+        }
+    }
+    catch (Exception)
+    {
+        // Too bad
+    }
+});
+
 var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
