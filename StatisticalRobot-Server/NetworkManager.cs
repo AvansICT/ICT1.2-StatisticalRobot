@@ -140,16 +140,19 @@ internal class NetworkManager
             .ToList();
     }
 
-    public static async Task ChangeActiveNetwork(Guid networkUuid) 
+    public static async Task<bool> ChangeActiveNetwork(Guid networkUuid) 
     {
-        await Cli.Wrap("nmcli")
+        var nmResult = await Cli.Wrap("nmcli")
             .WithArguments(args => 
             {
                 args.Add("c")
                     .Add("up")
                     .Add(networkUuid.ToString());
             })
+            .WithValidation(CommandResultValidation.None)
             .ExecuteAsync();
+
+        return nmResult.IsSuccess;
     }
 
     private static AvailableWifiNetwork ParseAvailableNetworkLine(string line)

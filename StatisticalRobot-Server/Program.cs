@@ -47,8 +47,11 @@ app.MapPost("/wifi/change_active", async (WifiChangeActiveRequestBody body) =>
     if(body.WifiUuid == Guid.Empty)
         return Results.BadRequest("Wifi uuid is not allowed to be empty");
     
-    await NetworkManager.ChangeActiveNetwork(body.WifiUuid);
-    return Results.Ok();
+    if(await NetworkManager.ChangeActiveNetwork(body.WifiUuid))
+        return Results.Ok();
+    else
+        return Results.BadRequest();
 });
+
 
 app.Run();
