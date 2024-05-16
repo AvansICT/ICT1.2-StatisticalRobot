@@ -53,5 +53,15 @@ app.MapPost("/wifi/change_active", async (WifiChangeActiveRequestBody body) =>
         return Results.BadRequest();
 });
 
+app.MapDelete("/wifi/remove_connection", async (Guid WifiUuid) => 
+{
+    if(WifiUuid == Guid.Empty)
+        return Results.BadRequest("Wifi uuid is missing");
+
+    if(await NetworkManager.RemoveWifiNetwork(WifiUuid))
+        return Results.Ok();
+    else
+        return Results.BadRequest();
+});
 
 app.Run();

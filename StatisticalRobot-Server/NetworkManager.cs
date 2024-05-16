@@ -155,6 +155,21 @@ internal class NetworkManager
         return nmResult.IsSuccess;
     }
 
+    public static async Task<bool> RemoveWifiNetwork(Guid networkUuid)
+    {
+        var nmResult = await Cli.Wrap("nmcli")
+            .WithArguments(args => 
+            {
+                args.Add("c")
+                    .Add("delete")
+                    .Add(networkUuid);
+            })
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteAsync();
+
+        return nmResult.IsSuccess;
+    }
+
     private static AvailableWifiNetwork ParseAvailableNetworkLine(string line)
     {
         // line Format: {ssid:string}:{in-use:' '|'*'}:{signal:int}:{security:string[], space seperated}
