@@ -57,8 +57,37 @@ internal class NetworkManager
             .WithValidation(CommandResultValidation.None)
             .ExecuteBufferedAsync();
 
-        // Step 3: Parse results
-        if(!nmResult.IsSuccess)
+        if(nmResult.IsSuccess) 
+        {
+            // Step 3: Change connection sessings
+
+            string output = nmResult.StandardOutput;
+            // Expected output: Device 'wlan0' successfully activated with '{wifi uuid}'.
+
+            int uuidStopIdx = output.LastIndexOf('\'');
+            if(uuidStopIdx <= 1) // The last ' could not be found or is at an invalid position (there must be enough room for a leading ')
+                return "Connection settings could not be modified, could not find wifi uuid";
+
+            int uuidStartIdx = output.LastIndexOf('\'', uuidStopIdx - 1);
+            if(uuidStartIdx < 0) // The starting ' could not be found
+                return "Connection settings could not be modified, could not find wifi uuid";
+
+            string uuidStr = output.Substring(uuidStartIdx + 1, uuidStopIdx - uuidStartIdx - 1);
+            if(!Guid.TryParse(uuidStr, out Guid _))
+                return "Connection settings could not be modified, wifi uuid is invalid";
+
+            nmResult = await Cli.Wrap("nmcli")
+                .WithArguments(args => 
+                {
+                    args.Add("con")
+                        .Add("modify").Add(uuidStr)
+                        .Add("connection.autoconnect").Add("yes") // Enable auto connect
+                        .Add("connection.autoconnect-priority").Add("100"); // Set high priority, so it will overrule hotspot connection
+                })
+                .WithValidation(CommandResultValidation.None)
+                .ExecuteBufferedAsync();
+        }
+        else
         {
             // Common error strings:
             // Password was required/password wrong => Error: Connection activation failed: Secrets were required, but not provided.
@@ -101,7 +130,7 @@ internal class NetworkManager
 
         // Step 1: Get a list of all saved networks
         await Cli.Wrap("nmcli")
-            .WithArguments("-t -f type,uuid,active,autoconnect c show")
+            .WithArguments("-t -f type,name,uuid,active,autoconnect c show")
             .WithStandardOutputPipe(PipeTarget.ToDelegate((line) => 
             {
                 var builder = NetworkManager.ParseSavedNetworkLine(line);
@@ -206,7 +235,7 @@ internal class NetworkManager
 
     private static SavedWifiNetworkBuilder? ParseSavedNetworkLine(string line)
     {
-        // line Format: {type:string}:{uuid:Guid}:{active:yes|no}:{autoconnect:yes|no}
+        // line Format: {type:string}:{name:string}:{uuid:Guid}:{active:yes|no}:{autoconnect:yes|no}
 
         // Parse Type
         int offset = 0;
@@ -214,6 +243,14 @@ internal class NetworkManager
         string type = line.Substring(0, colonIdx);
 
         if(type != "802-11-wireless") // Filter wifi networks only
+            return null;
+
+        // Parse Name
+        offset = colonIdx + 1;
+        colonIdx = NetworkManager.GetNextColonIndex(line, offset);
+        string name = line.Substring(offset, colonIdx - offset);
+
+        if(name == "Hotspot") // Hide wifi-hotspot
             return null;
 
         SavedWifiNetworkBuilder result = new SavedWifiNetworkBuilder();
