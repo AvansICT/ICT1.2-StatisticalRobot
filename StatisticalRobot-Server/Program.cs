@@ -3,7 +3,7 @@ var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
 
-app.MapGet("/wifi/ap_list", async () => 
+app.MapGet("/wifi/ap_list", async () =>
 {
     var networkList = await NetworkManager.GetAvailableWifiNetworksAsync();
     return Results.Ok(networkList);
@@ -29,11 +29,11 @@ app.MapPost("/wifi/new_connection", async (WifiNewConnectionRequestBody body) =>
     }
 
     var result = await NetworkManager.AddWifiConnection(body.SSID, body.Password);
-    
-    return result.Match(
-        (success) => Results.Ok(), 
-        (error) => Results.BadRequest(error)
-    );
+
+    if(string.IsNullOrEmpty(result))
+        return Results.Ok();
+    else
+        return Results.BadRequest(result);
 });
 
 app.MapGet("/wifi/saved", async () => 

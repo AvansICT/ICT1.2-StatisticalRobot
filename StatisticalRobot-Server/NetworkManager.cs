@@ -1,14 +1,8 @@
 
 using System.Data;
-using System.Net;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using CliWrap;
 using CliWrap.Buffered;
-using Microsoft.AspNetCore.SignalR;
-using OneOf;
-using OneOf.Types;
 
 internal class NetworkManager
 {
@@ -28,8 +22,10 @@ internal class NetworkManager
             .ToList();
     }
 
-    public static async Task<OneOf<bool, string>> AddWifiConnection(string ssid, string? password) 
+    public static async Task<string?> AddWifiConnection(string ssid, string? password) 
     {
+        string? result = null;
+
         // Step 1: Search for ssid
         await Cli.Wrap("nmcli")
             .WithArguments(args => 
@@ -62,11 +58,7 @@ internal class NetworkManager
             .ExecuteBufferedAsync();
 
         // Step 3: Parse results
-        if(nmResult.IsSuccess) 
-        {
-            return true;
-        }
-        else
+        if(!nmResult.IsSuccess)
         {
             // Common error strings:
             // Password was required/password wrong => Error: Connection activation failed: Secrets were required, but not provided.
@@ -77,20 +69,20 @@ internal class NetworkManager
             {
                 if(password is null)
                 {
-                    return $"A password is required to connect to '{ssid}'";
+                    result = $"A password is required to connect to '{ssid}'";
                 }
                 else
                 {
-                    return "The password was wrong";
+                    result = "The password was wrong";
                 }
             }
             else if (error.Contains("Error: 802-11-wireless-security.psk: property is invalid."))
             {
-                return "The password was too short or contains invalid characters";
+                result = "The password was too short or contains invalid characters";
             }
             else if(error.Contains("Error: No network with SSID")) 
             {
-                return $"The network with SSID '{ssid}' could not be found";
+                result = $"The network with SSID '{ssid}' could not be found";
             }
             else 
             {
@@ -99,6 +91,8 @@ internal class NetworkManager
                 throw new NotImplementedException(error);
             }
         }
+
+        return result;
     }
 
     public static async Task<List<SavedWifiNetwork>> GetSavedWifiNetworksAsync()

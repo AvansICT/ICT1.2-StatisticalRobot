@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="CliWrap" Version="3.6.6" />
-    <PackageReference Include="OneOf" Version="3.0.263" />
   </ItemGroup>
 
 </Project>
