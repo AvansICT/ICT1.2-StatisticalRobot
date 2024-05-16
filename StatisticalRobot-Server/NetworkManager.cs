@@ -26,6 +26,10 @@ internal class NetworkManager
     {
         string? result = null;
 
+        // The name "Hotspot" is used for the pi's backup-hotspot
+        if(ssid == "Hotspot")
+            return "The ssid 'Hotspot' is reserved and cannot be used";
+
         // Step 1: Search for ssid
         await Cli.Wrap("nmcli")
             .WithArguments(args => 
@@ -184,6 +188,61 @@ internal class NetworkManager
         return nmResult.IsSuccess;
     }
 
+    public static async Task ActivateBackupHotspot()
+    {
+        // PiId is the serial number, excluding the leading single '1' and all 0's
+        // Example: 100000BEEF => BEEF
+        string piId = (await Utility.GetPiSerialNumber())
+            .Substring(1)
+            .TrimStart('0');
+
+        string hotspotName = $"Robot_{piId}";
+        
+        bool hotspotConfigExists = false;
+        await Cli.Wrap("nmcli")
+            .WithArguments("-t -f name c show")
+            .WithStandardOutputPipe(PipeTarget.ToDelegate((line) => 
+            {
+                if(line.StartsWith(hotspotName))
+                    hotspotConfigExists = true;
+            }))
+            .ExecuteAsync();
+
+        if(hotspotConfigExists)
+        {
+            // Activate existing hotspot
+            await Cli.Wrap("nmcli")
+                .WithArguments((args) => 
+                {
+                    args.Add("con")
+                        .Add("up")
+                        .Add(hotspotName);
+                })
+                .ExecuteAsync();
+
+            // Done!
+        }
+        else
+        {
+            // Create new (will also activate immediately)
+            await Cli.Wrap("nmcli")
+                .WithArguments((args) => 
+                {
+                    args.Add("dev")
+                        .Add("wifi")
+                        .Add("hotspot")
+                        .Add("ssid")
+                        .Add(hotspotName)
+                        .Add("password")
+                        // I know, it's insecure, but also easy for the students
+                        // The main purpose is to keep other students form other studies away
+                        // The usage of the backup hotspot is also temporarly
+                        .Add("avansti123");
+                })
+                .ExecuteAsync();
+        }
+    }
+
     public static async Task<bool> RemoveWifiNetwork(Guid networkUuid)
     {
         var nmResult = await Cli.Wrap("nmcli")
@@ -233,7 +292,7 @@ internal class NetworkManager
         return new AvailableWifiNetwork(ssid, inUse, signal, security);
     }
 
-    private static SavedWifiNetworkBuilder? ParseSavedNetworkLine(string line)
+    private static SavedWifiNetworkBuilder? ParseSavedNetworkLine(string line, bool includeHotspot = false)
     {
         // line Format: {type:string}:{name:string}:{uuid:Guid}:{active:yes|no}:{autoconnect:yes|no}
 
@@ -250,7 +309,7 @@ internal class NetworkManager
         colonIdx = NetworkManager.GetNextColonIndex(line, offset);
         string name = line.Substring(offset, colonIdx - offset);
 
-        if(name == "Hotspot") // Hide wifi-hotspot
+        if(!includeHotspot && name == "Hotspot") // Hide wifi-hotspot
             return null;
 
         SavedWifiNetworkBuilder result = new SavedWifiNetworkBuilder();
