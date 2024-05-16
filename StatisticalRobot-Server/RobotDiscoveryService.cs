@@ -13,8 +13,6 @@ public class RobotDiscoveryService : BackgroundService
 
     private readonly ILogger<RobotDiscoveryService> logger;
 
-    private string? _piSerial;
-
     public RobotDiscoveryService(ILogger<RobotDiscoveryService> logger) 
     {
         this.logger = logger;
@@ -45,7 +43,7 @@ public class RobotDiscoveryService : BackgroundService
 
                     // this.logger.LogInformation($"Sending response to {udpResult.RemoteEndPoint.Address}:{port}");
 
-                    byte[] response = Encoding.ASCII.GetBytes($"STATROBOT_V0.0_ACK_{await this.GetPiSerialNumber()}");
+                    byte[] response = Encoding.ASCII.GetBytes($"STATROBOT_V0.0_ACK_{await Utility.GetPiSerialNumber()}");
                     await client.SendAsync(response, udpResult.RemoteEndPoint, cancelToken);
                 }
             }
@@ -55,32 +53,4 @@ public class RobotDiscoveryService : BackgroundService
             }
         }
     }
-
-    private async Task<string> GetPiSerialNumber()
-    {
-        if(this._piSerial is not null)
-            return this._piSerial;
-        
-        string? result = null;
-
-        using var reader = new StreamReader(new FileInfo("/proc/cpuinfo").OpenRead());
-        string? line;
-        while((line = await reader.ReadLineAsync()) is not null)
-        {
-            if(!line.StartsWith("Serial"))
-                continue;
-
-            int spaceIdx = line.LastIndexOf(' ');
-            if(spaceIdx < 0)
-                break;
-
-            result = line.Substring(spaceIdx + 1);
-            break;
-        }
-
-        this._piSerial = !string.IsNullOrEmpty(result) ? result : "deadbeef00000000";
-
-        return this._piSerial;
-    }
-
 }
