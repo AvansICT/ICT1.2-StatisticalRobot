@@ -49,6 +49,7 @@ if(-Not $piIsFound) {
 }
 
 if (-Not $piIsFound) {
+    Write-Output ""
     Write-Output "Connection with $piHost ($ip) failed!"
     Write-Output "Please check if the raspberry pi is connected to the same network."
     exit -1
@@ -58,7 +59,7 @@ else {
 }
 
 Write-Output "Cleaning old build files on remote..."
-ssh rompi@$ip "for pid in `$(ps -ef | grep \`"RobotProject.dll\`" | grep -v \`"grep\`" | awk '{print `$2}'); do kill -9 `$pid > /dev/null 2> /dev/null || :; done && mkdir -p \`"/home/rompi/csprojects/${workspaceFolderBasename}/\`" && rm -rf \`"/home/rompi/csprojects/${workspaceFolderBasename}/*\`""
+ssh rompi@$ip "for pid in `$(ps -ef | grep \`"RobotProject.dll\`" | grep -v \`"grep\`" | awk '{print `$2}'); do sudo kill -9 `$pid > /dev/null 2> /dev/null || :; done && mkdir -p \`"/home/rompi/csprojects/${workspaceFolderBasename}/\`" && rm -rf \`"/home/rompi/csprojects/${workspaceFolderBasename}/*\`""
 
 if (-Not $?) {
     Write-Output "Cleaning old files failed!"
