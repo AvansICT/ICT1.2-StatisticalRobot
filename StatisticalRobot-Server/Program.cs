@@ -1,4 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<RobotDiscoveryService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<RobotDiscoveryService>());
+
 var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
