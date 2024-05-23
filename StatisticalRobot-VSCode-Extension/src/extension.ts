@@ -27,9 +27,11 @@ export function activate(context: vscode.ExtensionContext) {
 	
 	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.discoverRobots', () => {
 		discoveryService.discover();
+		robotListProvider.refresh();
 	}));
 
 	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.refreshRobotList', () => {
+		discoveryService.discover();
 		robotListProvider.refresh();
 	}));
 

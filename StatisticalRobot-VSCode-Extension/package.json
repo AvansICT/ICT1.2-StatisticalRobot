@@ -60,15 +60,22 @@
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "avans-statisticalrobot.refreshAllRobots",
+          "when": "view == robot-list",
+          "group": "navigation"
+        }
+      ],
       "view/item/context": [
         {
           "command": "avans-statisticalrobot.connectToRobot",
-          "when": "viewItem == 'robotinfo'",
+          "when": "view == robot-list && viewItem == 'robotinfo'",
           "group": "inline"
         },
         {
           "command": "avans-statisticalrobot.changeRobotSettings",
-          "when": "viewItem == 'robotinfo'",
+          "when": "view == robot-list && viewItem == 'robotinfo'",
           "group": "inline"
         }
       ]

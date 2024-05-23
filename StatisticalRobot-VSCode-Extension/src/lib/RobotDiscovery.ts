@@ -76,6 +76,7 @@ export class RobotDiscovery {
         console.log("Refresh all robots");
 
         this.discoveredRobots = {};
+        this.changeCallback();
         this.discover();
     }
 

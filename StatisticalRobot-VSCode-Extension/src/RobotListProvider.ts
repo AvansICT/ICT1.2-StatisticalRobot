@@ -1,7 +1,7 @@
 
 import * as vscode from 'vscode';
 import { RobotDiscovery, RobotInfo } from './lib/RobotDiscovery';
-import path from 'path';
+import path, { resolve } from 'path';
 import { rejects } from 'assert';
 
 export class RobotListProvider implements vscode.TreeDataProvider<RobotListTreeItem> {
@@ -19,23 +19,30 @@ export class RobotListProvider implements vscode.TreeDataProvider<RobotListTreeI
     }
 
     getChildren(element?: RobotListTreeItem | undefined): vscode.ProviderResult<RobotListTreeItem[]> {
-        return (async () => {
-            if(element === undefined) {
-                return this.discoveryService.getDiscoveredRobots()
-                    .map((robotInfo) => new RobotListTreeItem(
+        if(element === undefined) {
+            let discoveredRobotList = this.discoveryService.getDiscoveredRobots();
+
+            if(discoveredRobotList.length > 0) {
+                return Promise.resolve(discoveredRobotList.map((robotInfo) => 
+                    new RobotListTreeItem(
                         robotInfo!, 
                         `Robot ${robotInfo?.simpleId} (${robotInfo?.address})`, 
                         vscode.TreeItemCollapsibleState.None
-                    ));
+                    )
+                ));
             }
             else {
-                return [];
+                // Add some fake delay, to give the user loading feedback
+                return new Promise((resolve, reject) => setTimeout(() => resolve(undefined), 1000));
             }
-        })();
+            
+        }
+        else {
+            return [];
+        }
     }
 
     refresh() {
-        this.discoveryService.discover();
         this._onDidChangeTreeData.fire();
     }
 
