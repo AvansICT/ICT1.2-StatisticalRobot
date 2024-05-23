@@ -7,6 +7,39 @@ using CliWrap.Buffered;
 internal class NetworkManager
 {
     
+    public static async Task<bool> IsConnectedToWifiNetwork(bool forceRefresh = false)
+    {
+        bool result = false;
+
+        if(forceRefresh)
+        {
+            await Cli.Wrap("nmcli")
+                .WithArguments("dev wifi rescan")
+                .ExecuteAsync();
+
+            // Rescan returns immediately, give it some time...
+            await Task.Delay(TimeSpan.FromSeconds(2));
+        }
+
+        await Cli.Wrap("nmcli")
+            .WithArguments("-t -f type,active c show")
+            .WithStandardOutputPipe(PipeTarget.ToDelegate((line) => 
+            {
+                if(result)
+                    return;
+
+                // Type must be wireless
+                int colonIdx = NetworkManager.GetNextColonIndex(line);
+                if(line.Substring(0, colonIdx) != "802-11-wireless")
+                    return;
+
+                result = result || line.Substring(colonIdx + 1) == "yes";
+            }))
+            .ExecuteAsync();
+
+        return result;
+    }
+
     public static async Task<List<AvailableWifiNetwork>> GetAvailableWifiNetworksAsync() 
     {
         List<AvailableWifiNetwork> result = new();
