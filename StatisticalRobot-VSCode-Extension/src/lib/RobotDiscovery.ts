@@ -3,7 +3,7 @@ import * as os from 'os';
 import dgram from 'dgram';
 import { Socket, RemoteInfo } from 'dgram';
 
-interface RobotInfo {
+export interface RobotInfo {
     get address(): string;
     get id(): string;
     get lastSeen(): Date;
@@ -11,7 +11,7 @@ interface RobotInfo {
     get simpleId(): string;
 }
 
-export class RobotInfoImpl implements RobotInfo {
+class RobotInfoImpl implements RobotInfo {
     
     public _address: string;
     public _id: string;
@@ -43,7 +43,7 @@ export class RobotDiscovery {
     private discoveredRobots: NodeJS.Dict<RobotInfoImpl> = {};
     private scanInterval: NodeJS.Timeout|undefined;
 
-    constructor() {
+    constructor(private readonly changeCallback: () => void ) {
         
     }
 
@@ -68,12 +68,15 @@ export class RobotDiscovery {
         this.broadcastDiscoverMessage();
     }
 
-    getDiscoveredRobots(purgeOld: boolean = true) : (RobotInfo | undefined)[] {
-        if(purgeOld) {
-            this.purgeOldDiscoveries();
-        }
-
+    getDiscoveredRobots() : (RobotInfo | undefined)[] {
         return Object.values(this.discoveredRobots);
+    }
+
+    refresh() {
+        console.log("Refresh all robots");
+
+        this.discoveredRobots = {};
+        this.discover();
     }
 
     close() {
@@ -81,6 +84,10 @@ export class RobotDiscovery {
 
         clearInterval(this.scanInterval);
         this.scanInterval = undefined;
+    }
+
+    dispose() {
+        this.close();
     }
 
     private handleScan() {
@@ -100,7 +107,7 @@ export class RobotDiscovery {
     }
 
     private purgeOldDiscoveries() {
-        const TIMEOUT = 60 * 1000; // 1 minute
+        const TIMEOUT = 30 * 1000; // 30 seconds
 
         let idListToPurge: string[] = [];
         let now = Date.now();
@@ -115,7 +122,11 @@ export class RobotDiscovery {
 
         for(let idToPurge of idListToPurge) {
             console.log(`${idToPurge}: Purge, device cannot be found on the network anymore`);
-            this.discoveredRobots[idToPurge] = undefined;
+            delete this.discoveredRobots[idToPurge];
+        }
+
+        if(idListToPurge.length > 0) {
+            this.changeCallback();
         }
     }
 
@@ -135,15 +146,17 @@ export class RobotDiscovery {
                 if(robotInfo._address !== rInfo.address) {
                     console.log(`${id}: Address changed from ${robotInfo._address} to ${rInfo.address}`);
                     robotInfo._address = rInfo.address;
+
+                    this.changeCallback();
                 }
 
-                
                 robotInfo._lastSeen = new Date();
             }
             else {
                 this.discoveredRobots[id] = new RobotInfoImpl(rInfo.address, id);
 
                 console.log(`Discovered ${id} (${this.discoveredRobots[id]!.simpleId})`);
+                this.changeCallback();
             }
         }
     }

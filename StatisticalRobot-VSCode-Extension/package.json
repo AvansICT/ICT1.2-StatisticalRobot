@@ -9,15 +9,70 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "workspaceContains:**/RobotProject.csproj"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "avans-statisticalrobot.helloWorld",
-        "title": "Hello World"
+        "command": "avans-statisticalrobot.discoverRobots",
+        "title": "Statistical Robot: Search for Robots",
+        "icon": "$(broadcast)"
+      },
+      {
+        "command": "avans-statisticalrobot.refreshAllRobots",
+        "title": "Statistical Robot: Refresh all Robots",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "avans-statisticalrobot.changeRobotSettings",
+        "icon": "$(gear)",
+        "title": "Statistical Robot: Change Robot Settings"
+      },
+      {
+        "command": "avans-statisticalrobot.connectToRobot",
+        "icon": "$(remote)",
+        "title": "Statistical Robot: Connect To Robot"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "statistical-robot",
+          "title": "Statistical Robot",
+          "icon": "resources/robot-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "statistical-robot": [
+        {
+          "id": "robot-list",
+          "name": "Robot List"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "robot-list",
+        "contents": "No robots have been found on your network.\n[Search for Robots](command:avans-statisticalrobot.discoverRobots)"
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "avans-statisticalrobot.connectToRobot",
+          "when": "viewItem == 'robotinfo'",
+          "group": "inline"
+        },
+        {
+          "command": "avans-statisticalrobot.changeRobotSettings",
+          "when": "viewItem == 'robotinfo'",
+          "group": "inline"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
