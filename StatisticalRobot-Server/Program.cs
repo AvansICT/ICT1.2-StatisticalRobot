@@ -71,6 +71,18 @@ app.MapDelete("/wifi/remove_connection", async (Guid WifiUuid) =>
         return Results.BadRequest();
 });
 
+app.MapPost("/power/shutdown", async () => 
+{
+    await PowerManager.Shutdown();
+    return Results.Ok();
+});
+
+app.MapPost("/power/reboot", async () => 
+{
+    await PowerManager.Reboot();
+    return Results.Ok();
+});
+
 app.Run();
 
 static async void RunBackupHotspotCheck()
