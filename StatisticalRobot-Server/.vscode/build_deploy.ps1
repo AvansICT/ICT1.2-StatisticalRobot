@@ -70,11 +70,11 @@ Write-Output "Deploying program to remote"
 
 if($ipVersion -eq [System.Net.Sockets.AddressFamily]::InterNetworkV6) {
     # IPv6
-    scp -6 -r "./bin/Debug/net8.0/*" "rompi@[${ip}]:'/home/rompi/csprojects/${workspaceFolderBasename}/'"
+    scp -6 -rp "./bin/Debug/net8.0/*" "rompi@[${ip}]:'/home/rompi/csprojects/${workspaceFolderBasename}/'"
 }
 else {
     # IPv4
-    scp -r "./bin/Debug/net8.0/*" "rompi@${ip}:'/home/rompi/csprojects/${workspaceFolderBasename}/'"
+    scp -rp "./bin/Debug/net8.0/*" "rompi@${ip}:'/home/rompi/csprojects/${workspaceFolderBasename}/'"
 }
 
 if (-Not $?) {
