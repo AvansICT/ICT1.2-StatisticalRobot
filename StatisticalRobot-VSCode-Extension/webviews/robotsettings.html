@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+
+    <style>
+
+        div.loading-animation {
+            border: 4px solid var(--vscode-editor-foreground);
+            border-top: 4px solid #23282c;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: loading-animation-spin 1s linear infinite;
+        }
+
+        @keyframes loading-animation-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        button {
+            color: var(--vscode-button-foreground);
+            background-color: var(--vscode-button-background);
+            border: 1px solid var(--vscode-button-border);
+            padding: 10px 40px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--vscode-button-hoverBackground);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+        }
+
+    </style>
+</head>
+<body>
+    <div>
+        <h1 style="margin-bottom: 2px">Setup Robot <span class="robot-name"></span></h1>
+        <p class="robot-ip-address" style="font-style: italic; margin-top: 2px"></p>
+    </div>
+
+    <p id="robot-error-msg" style="color: var(--vscode-errorForeground); font-size: larger; display: none;">
+        An error has occured
+    </p>
+
+    <div id="connecting-to-robot-container">
+        <p>Connecting to robot...</p>
+        <div class="loading-animation"></div>
+    </div>
+
+    <div id="robot-options-container" style="display: none;">
+        <div id="robot-power-options">
+            <h2>Power Options</h2>
+
+            <button id="btn-robot-shutdown">Shutdown</button>
+            <button id="btn-robot-reboot">Reboot</button>
+        </div>
+
+        <div id="robot-network-options">
+            <h2>WiFi Options</h2>
+
+            <div id="wifi-accesspoint-list-container">
+                <h3>Available WiFi Networks</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SSID</th>
+                            <th>Quality</th>
+                            <th>Password Required</th>
+                            <th>Options</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wifi-accesspoint-tbody"></tbody>
+                </table>
+            </div>
+
+            <div id="wifi-savednetworks-list-container">
+                <h3>Saved WiFi Networks</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SSID</th>
+                            <th>IsActive</th>
+                            <th>AutoConnect</th>
+                            <th>Options</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wifi-savednetworks-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let robotInfo = undefined;
+        let isInErrorState = false;
+
+        const connectingToRobotContainer = $('#connecting-to-robot-container', true);
+        const robotOptionsContainer = $('#robot-options-container', true);
+
+        const powerOptionsContainer = robotOptionsContainer.querySelector('#robot-power-options');
+        const networkOptionsContainer = robotOptionsContainer.querySelector('#robot-network-options');
+
+
+        powerOptionsContainer.querySelector('#btn-robot-shutdown')
+            .addEventListener('click', async () => {
+                // TODO: add confirm
+                request('/power/shutdown', 'POST');
+                showError('The robot has shutdown');
+            });
+
+        powerOptionsContainer.querySelector('#btn-robot-reboot')
+            .addEventListener('click', async () => {
+                // TODO: add confirm
+                request('/power/reboot', 'POST');
+                showError('The robot has shutdown');
+            });
+            
+
+
+        window.addEventListener('message', async (e) => {
+            robotInfo = e.data;
+
+            if(robotInfo.ipAddress == undefined) {
+                robotInfo = undefined;
+                return;
+            }
+
+            let robotNameContainers = $('.robot-name');
+            for(const robotNameContainer of robotNameContainers) {
+                robotNameContainer.textContent = robotInfo.simpleId;
+            }
+
+            let robotIpContainers = $('.robot-ip-address');
+            for(const robotIpContainer of robotIpContainers) {
+                robotIpContainer.textContent = robotInfo.ipAddress;
+            }
+
+            if(await testConnection()) {
+                showOptions();
+            }
+            else {
+                showError(`Could not connect to robot ${robotInfo.simpleId} on ${robotInfo.ipAddress}`);
+            }
+        });
+
+        async function testConnection() {
+            let response = await request('/test/ping');
+
+            return response.ok && await response.text() == "pong!"
+        }
+
+        function showOptions() {
+            connectingToRobotContainer.style.display = 'none';
+            robotOptionsContainer.style.display = '';
+
+            refreshApList();
+            getSavedWifiNetworks();
+        }
+
+        async function refreshApList() {
+            console.log('refresh ap list');
+
+            try {
+                let response = await request('/wifi/ap_list');
+
+                if(response.ok) {
+                    let apList = await response.json();
+                    
+                    apList = apList.sort((a, b) => b.signalQuality - a.signalQuality);
+                    console.log(apList);
+
+                    const wifiAccesspointTbody = $('#wifi-accesspoint-tbody', true);
+
+                    wifiAccesspointTbody.innerHTML = '';
+                    for(const ap of apList) {
+                        let tr = document.createElement('tr');
+
+                        tr.appendChild(createTd(ap.ssid));
+                        tr.appendChild(createTd(ap.signalQuality));
+                        tr.appendChild(createTd(ap.securityProtocol === 'Open' ? 'No' : 'Yes'));
+                        tr.appendChild(createTd(''));
+
+                        wifiAccesspointTbody.appendChild(tr);
+                    }
+                }
+            }
+            catch(e) {
+                // Todo
+            }
+
+            if(!isInErrorState)
+                setTimeout(refreshApList, 10000);
+        }
+
+        async function getSavedWifiNetworks() {
+            let response = await request('/wifi/saved');
+
+            if(response.ok) {
+                let wifiList = await response.json();
+
+                const wifiSavedNetworksTbody = $('#wifi-savednetworks-tbody', true);
+
+                wifiSavedNetworksTbody.innerHtml = '';
+                for(const wifiNetwork of wifiList) {
+                    let tr = document.createElement('tr');
+                    tr.appendChild(createTd(wifiNetwork.ssid));
+                    tr.appendChild(createTd(wifiNetwork.isActive ? 'Yes' : 'No'));
+                    tr.appendChild(createTd(wifiNetwork.autoConnect ? 'Yes' : 'No'));
+                    tr.appendChild(createTd(''));
+
+                    wifiSavedNetworksTbody.appendChild(tr);
+                }
+            }
+        }
+
+        async function request(endpoint, method, body) {
+            if(isInErrorState) {
+                return { ok: false, error: 'in error state' };
+            }
+
+            if(method == undefined)
+                method = 'GET';
+
+            if(!endpoint.startsWith('/'))
+                endpoint = '/' + endpoint;
+
+            let options = {
+                method
+            };
+
+            if(body) {
+                options.body = JSON.stringify(body);
+                options.headers = {
+                    'Content-Type': 'application/json;charset=utf-8'
+                }
+            }
+
+            try {
+                return await fetch(`http://${robotInfo.ipAddress}:5000${endpoint}`, options);
+            }
+            catch(ex) {
+                return { ok: false, error: ex }
+            }
+        }
+
+        function showError(error) {
+            isInErrorState = true;
+
+            const robotErrorMsg = $('#robot-error-msg', true);
+
+            robotErrorMsg.textContent = error;
+            robotErrorMsg.style.display = '';
+
+            const buttons = $('button');
+            for(let button of buttons)
+                button.disabled = true;
+        }
+
+        function createTd(content) {
+            let td = document.createElement('td');
+            td.textContent = content;
+            return td;
+        }
+
+        function $(selector, first) {
+            if(first == undefined)
+                first = false;
+
+            return first ? document.querySelector(selector) : document.querySelectorAll(selector);
+        }
+
+    </script>
+</body>
+</html>

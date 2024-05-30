@@ -112,12 +112,12 @@
       "view/item/context": [
         {
           "command": "avans-statisticalrobot.connectToRobot",
-          "when": "view == robot-list && viewItem == 'robotinfo'",
+          "when": "view == statisticalrobot-list && viewItem == 'robotinfo'",
           "group": "inline"
         },
         {
           "command": "avans-statisticalrobot.changeRobotSettings",
-          "when": "view == robot-list && viewItem == 'robotinfo'",
+          "when": "view == statisticalrobot-list && viewItem == 'robotinfo'",
           "group": "inline"
         }
       ]

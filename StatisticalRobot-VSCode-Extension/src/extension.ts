@@ -2,6 +2,8 @@
 import * as vscode from 'vscode';
 import { RobotDiscovery, RobotInfo } from './lib/RobotDiscovery';
 import { RobotListProvider } from './RobotListProvider';
+import path from 'path';
+import * as fs from 'fs';
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Avans Statistical Robot Extension Active');
@@ -69,7 +71,27 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		// TODO
+		// TODO only allow one settings view to open per robot
+		const settingsView = vscode.window.createWebviewPanel(
+			'statisticalrobot-settingsview',
+			`Settings ${robotInfo}`, 
+			vscode.ViewColumn.Active,
+			{
+				enableScripts: true,
+				retainContextWhenHidden: true
+			}
+		);
+
+		// TODO: fix this
+		// settingsView.iconPath = vscode.Uri.joinPath(vscode.Uri.parse(__dirname), '../resources/robot-icon.svg');
+
+		settingsView.webview.html = fs.readFileSync(path.join(__dirname, '..', 'webviews', 'robotsettings.html')).toString();
+
+		settingsView.webview.postMessage({
+			id: robotInfo.id,
+			ipAddress: robotInfo.address,
+			simpleId: robotInfo.simpleId
+		});
 	}));
 
 	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.connectedRobotIpAddress', async () => {
