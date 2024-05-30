@@ -68,14 +68,14 @@
     "views": {
       "statistical-robot": [
         {
-          "id": "robot-list",
+          "id": "statisticalrobot-list",
           "name": "Robot List"
         }
       ]
     },
     "viewsWelcome": [
       {
-        "view": "robot-list",
+        "view": "statisticalrobot-list",
         "contents": "No robots have been found on your network.\n[Search for Robots](command:avans-statisticalrobot.discoverRobots)"
       }
     ],

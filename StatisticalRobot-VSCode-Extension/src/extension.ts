@@ -6,11 +6,8 @@ import { RobotListProvider } from './RobotListProvider';
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Avans Statistical Robot Extension Active');
 
-	// TODO: Make cmd connectToRobot and changeRobotSettings functional
-	// connectToRobot sets the selected robot as connected (build and launch ip are set, selected robot-id is saved in project)
+	// TODO: Make changeRobotSettings functional
 	// changeRobotSettings opens a webview with robot settings (wifi + power)
-
-	// TODO: Research if you can have hidden commands (unreachable from cmd-palette) for UI-only commands, like connect and settings
 
 	let disposables: vscode.Disposable[] = [];
 
@@ -75,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// TODO
 	}));
 
-	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.connectedRobotIpAddress', () => {
+	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.connectedRobotIpAddress', async () => {
 		let activeConnectedRobotId = vscode.workspace.getConfiguration()
 			.get<string>('avans-statisticalrobot.connected-robot');
 
@@ -86,20 +83,28 @@ export function activate(context: vscode.ExtensionContext) {
 
 		let connectedRobot = discoveryService.getRobotById(activeConnectedRobotId);
 		if(connectedRobot === null) {
-			vscode.window.showErrorMessage(`Could not detect robot ${activeConnectedRobotId} on your network!`, "View available robots");
+			let messageResult = await vscode.window.showErrorMessage(
+				`Could not detect robot ${activeConnectedRobotId} on your network!`, 
+				"View available robots"
+			);
+
+			if(messageResult === "View available robots") {
+				vscode.commands.executeCommand("statisticalrobot-list.focus");
+			}
+
 			return undefined;
 		}
 
 		return connectedRobot.address;
 	}));
 
-	disposables.push(vscode.window.registerTreeDataProvider('robot-list', robotListProvider));
+	disposables.push(vscode.window.registerTreeDataProvider('statisticalrobot-list', robotListProvider));
 
-	vscode.workspace.onDidChangeConfiguration((e) => {
+	disposables.push(vscode.workspace.onDidChangeConfiguration((e) => {
 		if(e.affectsConfiguration('avans-statisticalrobot.connected-robot')) {
 			robotListProvider.refresh();
 		}
-	});
+	}));
 
 	context.subscriptions.push(...disposables);
 }
