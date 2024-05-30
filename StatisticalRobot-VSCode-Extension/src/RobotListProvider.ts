@@ -46,14 +46,6 @@ export class RobotListProvider implements vscode.TreeDataProvider<RobotListTreeI
         this._onDidChangeTreeData.fire();
     }
 
-    // getParent?(element: RobotListTreeItem): vscode.ProviderResult<RobotListTreeItem> {
-    //     throw new Error('Method not implemented.');
-    // }
-
-    // resolveTreeItem?(item: vscode.TreeItem, element: RobotListTreeItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TreeItem> {
-    //     throw new Error('Method not implemented.');
-    // }
-
 }
 
 class RobotListTreeItem extends vscode.TreeItem {

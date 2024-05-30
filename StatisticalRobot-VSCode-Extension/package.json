@@ -60,6 +60,24 @@
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "avans-statisticalrobot.discoverRobots",
+          "when": "false"
+        },
+        {
+          "command": "avans-statisticalrobot.refreshAllRobots",
+          "when": "false"
+        },
+        {
+          "command": "avans-statisticalrobot.changeRobotSettings",
+          "when": "false"
+        },
+        {
+          "command": "avans-statisticalrobot.connectToRobot",
+          "when": "false"
+        }
+      ],
       "view/title": [
         {
           "command": "avans-statisticalrobot.refreshAllRobots",
