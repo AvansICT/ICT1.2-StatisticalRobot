@@ -18,7 +18,7 @@
             "pipeTransport": {
                 "pipeCwd": "${workspaceFolder}",
                 "pipeProgram": "ssh",
-                "pipeArgs": [ "rompi@${command:avans-statisticalrobot.connectedRobotIpAddress}", "sudo" ],
+                "pipeArgs": [ "rompi@raspberrypi.local", "sudo" ],
                 "debuggerPath": "/opt/vsdbg/vsdbg"
             }
         }
