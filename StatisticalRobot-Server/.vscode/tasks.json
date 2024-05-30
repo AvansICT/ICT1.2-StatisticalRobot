@@ -18,7 +18,7 @@
                 "Process;",
                 ".\\.vscode\\build_deploy.ps1",
                 "${workspaceFolderBasename}",
-				"${command:avans-statisticalrobot.connectedRobotIpAddress}"
+				"192.168.234.192"
             ],
 			"group": {
 				"kind": "build",
