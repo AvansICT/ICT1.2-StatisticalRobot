@@ -3,12 +3,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<RobotDiscoveryService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<RobotDiscoveryService>());
 
+builder.Services.AddCors();
+
 // Known fire and forget, shouldn't matter too much if this fails
 var hotspotTask = Task.Run(RunBackupHotspotCheck);
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.UseCors(builder => 
+    builder
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+);
+
+app.MapGet("/test/ping", () => "pong!");
 
 app.MapGet("/wifi/ap_list", async () =>
 {
