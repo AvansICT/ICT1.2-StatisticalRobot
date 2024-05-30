@@ -1,10 +1,10 @@
+using System.Device.Gpio;
 using System.Device.I2c;
 using Avans.StatisticalRobot;
 
-//I2cDevice romi = Robot.CreateI2cDevice(20);
-
-
 Robot.Motors(0,0);
+
+Robot.SetPinMode(5,PinMode.Output);
 
 ushort batteryData = Robot.ReadBatteryMillivolts();
 Console.WriteLine(batteryData);
@@ -14,7 +14,7 @@ bool buttonA = buttonData[0];
 bool buttonB = buttonData[1];
 bool buttonC = buttonData[2];
 
-while(!buttonA) 
+while(!(buttonA && buttonB)) 
 {
     buttonData = Robot.ReadButtons();
     buttonA = buttonData[0];
@@ -24,7 +24,9 @@ while(!buttonA)
     Console.WriteLine(buttonB);
     Console.WriteLine(buttonC);
 
-    for(short i = 0; i < 400; i += 5) {
+    if(buttonB&&buttonC)
+    {
+        for(short i = 0; i < 400; i += 5) {
         Robot.Motors(i, i);
         await Task.Delay(10);
     }
@@ -34,9 +36,15 @@ while(!buttonA)
         await Task.Delay(10);
     }
     Robot.Motors(0,0);
+    }
+
+    if(buttonA) Robot.WritePin(5,PinValue.High);
+    else        Robot.WritePin(5,PinValue.Low);
 
     await Task.Delay(1000);
 }
-
-Console.WriteLine("Hello World!");
-Console.ReadLine();
+Robot.Motors(0,0);
+Robot.WritePin(5,PinValue.Low);
+Robot.PlayNotes("o4l16ceg>c8");
+Console.WriteLine("The loop has ended, press a key to end the program.");
+//Console.ReadLine();

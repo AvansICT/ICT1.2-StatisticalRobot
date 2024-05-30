@@ -21,7 +21,7 @@ public class StructConverter
         if (o is ushort) return BitConverter.GetBytes((ushort)o);
         if (o is bool) return BitConverter.GetBytes((bool)o);
         if (o is byte || o is sbyte) return new byte[] { (byte)o };
-        throw new ArgumentException("Unsupported object type found");
+        throw new ArgumentException("Unsupported object type found: " + o.GetType().FullName);
     }
 
     private static string GetFormatSpecifierFor(object o)
