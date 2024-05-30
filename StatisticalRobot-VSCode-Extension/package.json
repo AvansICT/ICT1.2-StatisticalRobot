@@ -13,7 +13,23 @@
     "workspaceContains:**/RobotProject.csproj"
   ],
   "main": "./dist/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "This extension uses network functionality and provides build tasks that generate executing code, which is published to a network target."
+    }
+  },
   "contributes": {
+    "configuration": {
+      "title": "Avans Statistical Robot",
+      "properties": {
+        "avans-statisticalrobot.connected-robot": {
+          "type": ["string", null],
+          "default": null,
+          "description": "The id of the statistical robot selected for publishing and debugging. This property will be autofilled by the statistical robot extension using automatic discovery"
+        }
+      }
+    },
     "commands": [
       {
         "command": "avans-statisticalrobot.discoverRobots",

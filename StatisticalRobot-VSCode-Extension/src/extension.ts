@@ -49,7 +49,17 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
+		let activeConnectedRobotId = vscode.workspace.getConfiguration()
+			.get<string>('avans-statisticalrobot.connected-robot');
 
+		if(activeConnectedRobotId === robotInfo.id) {
+			vscode.window.showInformationMessage(`You're already connected to ${robotInfo}`);
+			return;
+		}
+
+		vscode.workspace.getConfiguration()
+			.update('avans-statisticalrobot.connected-robot', robotInfo.id, null)
+			.then(() => vscode.window.showInformationMessage(`${robotInfo} as been set as the connected robot!`));
 	}));
 
 	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.changeRobotSettings', (treeItem) => {
@@ -62,10 +72,16 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		
+		// TODO
 	}));
 
 	disposables.push(vscode.window.registerTreeDataProvider('robot-list', robotListProvider));
+
+	vscode.workspace.onDidChangeConfiguration((e) => {
+		if(e.affectsConfiguration('avans-statisticalrobot.connected-robot')) {
+			robotListProvider.refresh();
+		}
+	});
 
 	context.subscriptions.push(...disposables);
 }
