@@ -1,0 +1,26 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug on Pi",
+            "type":"coreclr",
+            "request": "launch",
+            "program": "/opt/dotnet_8.0/dotnet",
+            "args": [ "/home/rompi/csprojects/${workspaceFolderBasename}/RobotProject.dll" ],
+            "cwd": "/home/rompi/csprojects/${workspaceFolderBasename}",
+            "justMyCode": false,
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "Build and Upload",
+            "pipeTransport": {
+                "pipeCwd": "${workspaceFolder}",
+                "pipeProgram": "ssh",
+                "pipeArgs": [ "rompi@192.168.234.192" ],
+                "debuggerPath": "/opt/vsdbg/vsdbg"
+            }
+        }
+    ]
+}
