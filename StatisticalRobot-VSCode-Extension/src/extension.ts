@@ -75,6 +75,24 @@ export function activate(context: vscode.ExtensionContext) {
 		// TODO
 	}));
 
+	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.connectedRobotIpAddress', () => {
+		let activeConnectedRobotId = vscode.workspace.getConfiguration()
+			.get<string>('avans-statisticalrobot.connected-robot');
+
+		if(typeof activeConnectedRobotId !== 'string') {
+			vscode.window.showErrorMessage('No connected robot or saved robot id is invalid!');
+			return undefined;
+		}
+
+		let connectedRobot = discoveryService.getRobotById(activeConnectedRobotId);
+		if(connectedRobot === null) {
+			vscode.window.showErrorMessage(`Could not detect robot ${activeConnectedRobotId} on your network!`, "View available robots");
+			return undefined;
+		}
+
+		return connectedRobot.address;
+	}));
+
 	disposables.push(vscode.window.registerTreeDataProvider('robot-list', robotListProvider));
 
 	vscode.workspace.onDidChangeConfiguration((e) => {

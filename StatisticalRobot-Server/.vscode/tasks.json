@@ -18,7 +18,7 @@
                 "Process;",
                 ".\\.vscode\\build_deploy.ps1",
                 "${workspaceFolderBasename}",
-				"raspberrypi.local"
+				"${command:avans-statisticalrobot.connectedRobotIpAddress}"
             ],
 			"group": {
 				"kind": "build",
