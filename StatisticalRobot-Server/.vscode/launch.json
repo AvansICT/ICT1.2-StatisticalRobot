@@ -9,7 +9,7 @@
             "type":"coreclr",
             "request": "launch",
             "program": "/opt/dotnet_8.0/dotnet",
-            "args": [ "/home/rompi/csprojects/${workspaceFolderBasename}/RobotProject.dll" ],
+            "args": [ "/home/rompi/csprojects/${workspaceFolderBasename}/StatisticalRobot-Server.dll" ],
             "cwd": "/home/rompi/csprojects/${workspaceFolderBasename}",
             "justMyCode": false,
             "stopAtEntry": false,

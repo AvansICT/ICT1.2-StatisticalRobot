@@ -1,7 +1,7 @@
 $workspaceFolderBasename = $args[0]
 $piHost = $args[1]
 
-dotnet build RobotProject.csproj
+dotnet build StatisticalRobot-Server.csproj
 if (-Not $?) {
     exit -1;
 }
@@ -59,7 +59,7 @@ else {
 }
 
 Write-Output "Cleaning old build files on remote..."
-ssh rompi@$ip "for pid in `$(ps -ef | grep \`"RobotProject.dll\`" | grep -v \`"grep\`" | awk '{print `$2}'); do sudo kill -9 `$pid > /dev/null 2> /dev/null || :; done && mkdir -p \`"/home/rompi/csprojects/${workspaceFolderBasename}/\`" && rm -rf \`"/home/rompi/csprojects/${workspaceFolderBasename}/*\`""
+ssh rompi@$ip "for pid in `$(ps -ef | grep \`"StatisticalRobot-Server.dll\`" | grep -v \`"grep\`" | awk '{print `$2}'); do sudo kill -9 `$pid > /dev/null 2> /dev/null || :; done && mkdir -p \`"/home/rompi/csprojects/${workspaceFolderBasename}/\`" && rm -rf \`"/home/rompi/csprojects/${workspaceFolderBasename}/*\`""
 
 if (-Not $?) {
     Write-Output "Cleaning old files failed!"
