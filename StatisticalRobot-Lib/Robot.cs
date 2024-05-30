@@ -1,7 +1,7 @@
-
 using System.Device.Gpio;
 using System.Device.I2c;
-using System.Dynamic;
+using System.Device.Pwm;
+using System.Device.Spi;
 
 namespace Avans.StatisticalRobot;
 
@@ -107,6 +107,11 @@ public static class Robot {
     public static PinValue ReadPin(int pinNumber)
     {
         return gpioController.Read(pinNumber);
+    }
+
+    public static void PwmPin(int frequency, int dutyCyclePercentage )
+    {
+        PwmChannel pwm = PwmChannel.Create(1,12,frequency,dutyCyclePercentage);
     }
 
 }
