@@ -78,6 +78,10 @@ export class RobotDiscovery {
         return Object.values(this.discoveredRobots);
     }
 
+    getRobotById(id: string) : RobotInfo | null {
+        return this.discoveredRobots[id] ?? null;
+    }
+
     refresh() {
         console.log("Refresh all robots");
 

@@ -50,6 +50,10 @@
         "command": "avans-statisticalrobot.connectToRobot",
         "icon": "$(remote)",
         "title": "Statistical Robot: Connect To Robot"
+      },
+      {
+        "command": "avans-statisticalrobot.connectedRobotIpAddress",
+        "title": "Statistical Robot: IP Address"
       }
     ],
     "viewsContainers": {
@@ -91,6 +95,10 @@
         },
         {
           "command": "avans-statisticalrobot.connectToRobot",
+          "when": "false"
+        },
+        {
+          "command": "avans-statisticalrobot.connectedRobotIpAddress",
           "when": "false"
         }
       ],
