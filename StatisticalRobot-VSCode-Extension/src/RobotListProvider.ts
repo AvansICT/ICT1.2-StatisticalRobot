@@ -23,11 +23,13 @@ export class RobotListProvider implements vscode.TreeDataProvider<RobotListTreeI
             let discoveredRobotList = this.discoveryService.getDiscoveredRobots();
 
             if(discoveredRobotList.length > 0) {
+                let connectedRobotId = vscode.workspace.getConfiguration().get<string>('avans-statisticalrobot.connected-robot');
+
                 return Promise.resolve(discoveredRobotList.map((robotInfo) => 
                     new RobotListTreeItem(
                         robotInfo!, 
-                        `Robot ${robotInfo?.simpleId} (${robotInfo?.address})`, 
-                        vscode.TreeItemCollapsibleState.None
+                        vscode.TreeItemCollapsibleState.None,
+                        robotInfo?.id === connectedRobotId
                     )
                 ));
             }
@@ -46,26 +48,18 @@ export class RobotListProvider implements vscode.TreeDataProvider<RobotListTreeI
         this._onDidChangeTreeData.fire();
     }
 
-    // getParent?(element: RobotListTreeItem): vscode.ProviderResult<RobotListTreeItem> {
-    //     throw new Error('Method not implemented.');
-    // }
-
-    // resolveTreeItem?(item: vscode.TreeItem, element: RobotListTreeItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TreeItem> {
-    //     throw new Error('Method not implemented.');
-    // }
-
 }
 
 class RobotListTreeItem extends vscode.TreeItem {
 
     constructor(
-        public robotInfo: RobotInfo, 
-        public readonly label: string, 
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState
+        public readonly robotInfo: RobotInfo,
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+        public readonly isConnected: boolean = false
     ) {
-        super(label, collapsibleState);
+        super(robotInfo.toString(), collapsibleState);
 
-        this.iconPath = path.join(__dirname, '..', 'resources', 'robot-active.svg');
+        this.iconPath = path.join(__dirname, '..', 'resources', isConnected ? 'robot-active.svg' : 'robot-icon.svg');
         this.contextValue = 'robotinfo';
     }
 

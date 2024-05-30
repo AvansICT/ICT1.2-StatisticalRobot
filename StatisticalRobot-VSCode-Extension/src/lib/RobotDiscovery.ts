@@ -9,6 +9,8 @@ export interface RobotInfo {
     get lastSeen(): Date;
 
     get simpleId(): string;
+
+    toString(): string
 }
 
 class RobotInfoImpl implements RobotInfo {
@@ -34,6 +36,10 @@ class RobotInfoImpl implements RobotInfo {
 
     get simpleId(): string {
         return this._id.substring(1).replace(/^0+/, '');
+    }
+
+    toString(): string {
+        return `Robot ${this.simpleId} (${this.address})`;
     }
 }
 

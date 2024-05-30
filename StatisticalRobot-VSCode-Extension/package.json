@@ -12,8 +12,24 @@
   "activationEvents": [
     "workspaceContains:**/RobotProject.csproj"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "This extension uses network functionality and provides build tasks that generate executing code, which is published to a network target."
+    }
+  },
   "contributes": {
+    "configuration": {
+      "title": "Avans Statistical Robot",
+      "properties": {
+        "avans-statisticalrobot.connected-robot": {
+          "type": ["string", null],
+          "default": null,
+          "description": "The id of the statistical robot selected for publishing and debugging. This property will be autofilled by the statistical robot extension using automatic discovery"
+        }
+      }
+    },
     "commands": [
       {
         "command": "avans-statisticalrobot.discoverRobots",
@@ -60,6 +76,24 @@
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "avans-statisticalrobot.discoverRobots",
+          "when": "false"
+        },
+        {
+          "command": "avans-statisticalrobot.refreshAllRobots",
+          "when": "false"
+        },
+        {
+          "command": "avans-statisticalrobot.changeRobotSettings",
+          "when": "false"
+        },
+        {
+          "command": "avans-statisticalrobot.connectToRobot",
+          "when": "false"
+        }
+      ],
       "view/title": [
         {
           "command": "avans-statisticalrobot.refreshAllRobots",
@@ -82,22 +116,29 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./",
+    "package": "npx vsce package --allow-missing-repository"
   },
   "devDependencies": {
-    "@types/vscode": "^1.89.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
+    "@types/vscode": "^1.89.0",
     "@typescript-eslint/eslint-plugin": "^7.7.1",
     "@typescript-eslint/parser": "^7.7.1",
-    "eslint": "^8.57.0",
-    "typescript": "^5.4.5",
     "@vscode/test-cli": "^0.0.9",
-    "@vscode/test-electron": "^2.3.9"
+    "@vscode/test-electron": "^2.3.9",
+    "@vscode/vsce": "^2.26.1",
+    "esbuild": "^0.21.4",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5"
   }
 }
