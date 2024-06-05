@@ -47,6 +47,11 @@
         "title": "Statistical Robot: Change Robot Settings"
       },
       {
+        "command": "avans-statisticalrobot.openDesignWebview",
+        "icon": "$(gear)",
+        "title": "Statistical Robot: Open Design"
+      },
+      {
         "command": "avans-statisticalrobot.connectToRobot",
         "icon": "$(remote)",
         "title": "Statistical Robot: Connect To Robot"

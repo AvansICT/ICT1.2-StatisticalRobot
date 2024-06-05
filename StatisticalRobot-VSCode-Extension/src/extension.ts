@@ -94,6 +94,25 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	}));
 
+	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.openDesignWebview', (treeItem) => {
+
+		// TODO only allow one settings view to open per robot
+		const designView = vscode.window.createWebviewPanel(
+			'statisticalrobot-designview',
+			`Settings Design`, 
+			vscode.ViewColumn.Active,
+			{
+				enableScripts: true,
+				retainContextWhenHidden: true
+			}
+		);
+
+		// TODO: fix this
+		// settingsView.iconPath = vscode.Uri.joinPath(vscode.Uri.parse(__dirname), '../resources/robot-icon.svg');
+
+		designView.webview.html = fs.readFileSync(path.join(__dirname, '..', 'webviews', 'design.html')).toString();
+	}));
+
 	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.connectedRobotIpAddress', async () => {
 		let activeConnectedRobotId = vscode.workspace.getConfiguration()
 			.get<string>('avans-statisticalrobot.connected-robot');
