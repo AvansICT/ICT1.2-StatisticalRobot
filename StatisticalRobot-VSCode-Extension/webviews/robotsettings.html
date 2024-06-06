@@ -232,6 +232,16 @@
         const wifiSavedNetworksListContainer = $('#wifi-savednetworks-list-container', true);
 
         const errorOverlay = $('#robot-error-container', true);
+        errorOverlay.querySelector('#btn-error-retry')
+            .addEventListener('click', (e) => {
+                showRobotOptions(false);
+
+                isInErrorState = false;
+                errorOverlay.style.display = 'none';
+
+                showPageLoading(true);
+                connectToRobot();
+            });
 
         const wifiPasswordOverlay = $('#overlay-enter-wifi-password', true);
         wifiPasswordOverlay.querySelector('#input-wifi-password')
@@ -277,22 +287,32 @@
                 robotIpContainer.textContent = robotInfo.ipAddress;
             }
 
-            if(await testConnection()) {
-                showPageLoading(false);
-
-                wifiAccessPointListContainer.appendChild(createDivLoadingAnimation());
-                wifiSavedNetworksListContainer.appendChild(createDivLoadingAnimation());
-
-                showRobotOptions(true);
-
-                refreshApList();
-                getSavedWifiNetworks();
-            }
-            else {
-                showPageLoading(false);
-                showError(`Could not connect to robot ${robotInfo.simpleId} on ${robotInfo.ipAddress}`);
-            }
+            await connectToRobot();
         });
+
+        async function connectToRobot() {
+            try {
+                if(await testConnection()) {
+                    showPageLoading(false);
+
+                    clearAccessPointList(true);
+                    clearSavedNetworksList(true);
+
+                    showRobotOptions(true);
+
+                    refreshApList();
+                    getSavedWifiNetworks();
+                }
+                else {
+                    showPageLoading(false);
+                    showError(`Could not connect to robot ${robotInfo.simpleId} on ${robotInfo.ipAddress}`);
+                }
+            }
+            catch (err) {
+                console.error(err);
+                showError(`An error occured whilst connecting to robot ${robotInfo.simpleId} on ${robotInfo.ipAddress}`);
+            }
+        }
 
         async function testConnection() {
             let response = await request('/test/ping');
@@ -362,6 +382,8 @@
                 options.headers = {
                     'Content-Type': 'application/json;charset=utf-8'
                 }
+                // Abort after 7.5 seconds
+                options.signal = AbortSignal.timeout(7500);
             }
 
             try {
