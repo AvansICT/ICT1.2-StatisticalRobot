@@ -60,6 +60,7 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
+            max-width: 90%;
         }
 
         #robot-power-options>.button-container {
@@ -284,7 +285,7 @@
 
                 if(await testConnection()) {
                     if(await addNewConnection(wifiSsid, wifiPassword)) {
-                        showError(`The robot has connected to ${wifiSsid}. Please close this window and connect to the same WiFi as your robot.`, false);
+                        showError(`The connection with the robot was lost. If the password was correct, the robot should be connected to '${wifiSsid}'.`, false);
                     }
                 }
                 else {
@@ -302,9 +303,37 @@
 
             let wifiListItem = e.target.parentElement.parentElement;
             let wifiSsid = wifiListItem.getAttribute('data-ssid');
+            let savedNetwork = savedNetworkBySsid[wifiSsid];
+
+            console.log(savedNetwork);
+
+            let confirmMessage = `Are you sure you want to remove WiFi network '${wifiSsid}'?`;
+            if(wifiSsid in apBySsid && apBySsid[wifiSsid].inUse) {
+                confirmMessage += ` WARNING: '${wifiSsid}' is your active connection, the connection with the robot will be lost!`;
+            }
             
-            if(await showConfirm(`Are you sure you want to remove WiFi network '${wifiSsid}'?`)) {
-                console.log('remove');
+            if(await showConfirm(confirmMessage)) {
+                showPageLoading(true, `Removing connection ${wifiSsid}...`);
+                
+                if(await removeConnection(savedNetwork.ssid, savedNetwork.uuid)) {
+                    if(!await testConnection()) {
+                        showError(`The connection with robot ${robotInfo.simpleId} was lost`, true);
+                    }
+                    else {
+                        savedNetworkBySsid = {};
+                        clearSavedNetworksList(true);
+                        clearAccessPointList(true);
+
+                        showPageLoading(false);
+
+                        await getSavedWifiNetworks();
+
+                        showAccessPointRefreshAnimation(true);
+                        refreshApList(true);
+                    }
+                }
+
+                showPageLoading(false);
             }
         });
 
@@ -504,6 +533,25 @@
                 }
 
                 showError(`Connecting to wifi '${ssid}' failed: ${response.error ?? await response.text()}`, true);
+                return false;
+            }
+        }
+
+        async function removeConnection(ssid, uuid) {
+            let params = new URLSearchParams();
+            params.append('wifiUuid', uuid);
+
+            let response = await request('/wifi/remove_connection?' + params.toString(), 'DELETE');
+            if(response.ok) {
+                return true;
+            }
+            else {
+                // Connection was lost because of network change, operation successfull
+                if(response.aborted) {
+                    return true;
+                }
+
+                showError(`Removing wifi connection '${ssid}' failed: ${response.error ?? await response.text()}`, true);
                 return false;
             }
         }
