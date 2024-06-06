@@ -244,12 +244,77 @@
         let savedNetworkBySsid = {};
 
         const wifiAccessPointListContainer = $('#wifi-accesspoint-list-container', true);
+        wifiAccessPointListContainer.addEventListener('click', async (e) => {
+            if(!e.target.classList.contains('btn-wifi-connect'))
+                return;
+
+            let wifiListItem = e.target.parentElement.parentElement;
+            let wifiSsid = wifiListItem.getAttribute('data-ssid');
+            let wifiIsSaved = wifiListItem.getAttribute('data-is-saved-network') == "true";
+            let wifiRequiresPassword = wifiListItem.getAttribute('data-requires-password') == "true";
+
+            let wifiPassword = undefined;
+
+            if(wifiIsSaved) {
+                let savedNetwork = savedNetworkBySsid[wifiSsid];
+                if(!savedNetwork) {
+                    showError(`Configuration for network '${wifiSsid}' has errors. Please retry later`, true);
+                    return;
+                }
+
+                showPageLoading(true, `Robot is connecting to ${wifiSsid}...`);
+
+                if(await testConnection()) {
+                    if(await changeActiveNetwork(savedNetwork.ssid, savedNetwork.uuid)) {
+                        showError(`The robot has connected to ${wifiSsid}. Please close this window and connect to the same WiFi as your robot.`, false);
+                    }
+                }
+                else {
+                    showError(`Could not change the WiFi connection to '${wifiSsid}': The connection with the robot was lost.`);
+                }
+
+                showPageLoading(false);
+            }
+            else {
+                if(wifiRequiresPassword) {
+                    wifiPassword = await enterWifiPassword(apBySsid[wifiSsid]);
+                }
+
+                showPageLoading(true, `Robot is connecting to ${wifiSsid}...`);
+
+                if(await testConnection()) {
+                    if(await addNewConnection(wifiSsid, wifiPassword)) {
+                        showError(`The robot has connected to ${wifiSsid}. Please close this window and connect to the same WiFi as your robot.`, false);
+                    }
+                }
+                else {
+                    showError(`Could not add WiFi connection '${wifiSsid}': The connection with the robot was lost.`);
+                }
+
+                showPageLoading(false);
+            }
+        });
+
         const wifiSavedNetworksListContainer = $('#wifi-savednetworks-list-container', true);
+        wifiSavedNetworksListContainer.addEventListener('click', async (e) => {
+            if(!e.target.classList.contains('btn-wifi-remove'))
+                return;
+
+            let wifiListItem = e.target.parentElement.parentElement;
+            let wifiSsid = wifiListItem.getAttribute('data-ssid');
+            
+            if(await showConfirm(`Are you sure you want to remove WiFi network '${wifiSsid}'?`)) {
+                console.log('remove');
+            }
+        });
 
         const errorOverlay = $('#robot-error-container', true);
         errorOverlay.querySelector('#btn-error-retry')
             .addEventListener('click', (e) => {
                 showRobotOptions(false);
+
+                apBySsid = {};
+                savedNetworkBySsid = {};
 
                 isInErrorState = false;
                 errorOverlay.style.display = 'none';
@@ -276,7 +341,7 @@
                     showRobotOptions(false);
                     showPageLoading(true, "Shutting down...");
                     await request('/power/shutdown', 'POST');
-                    showError('The robot has shutdown. You can close this page now', false);
+                    showError('The robot has shutdown. You can close this window now.', false);
                 }
             });
 
@@ -286,7 +351,7 @@
                     showRobotOptions(false);
                     showPageLoading(true, "Rebooting...");
                     await request('/power/reboot', 'POST');
-                    showError('The robot is rebooting. You can close this page now');
+                    showError('The robot is rebooting. You can close this window now.');
                 }
             });
             
@@ -363,8 +428,6 @@
                             
                             apBySsid[ap.ssid] = ap;
                         }
-
-                        console.log(apBySsid);
                     }
                     else {
                         let p = elem('p');
@@ -398,14 +461,50 @@
                         wifiSavedNetworksListContainer.appendChild(createWifiSavedNetworkListItem(wifiNetwork));
                         savedNetworkBySsid[wifiNetwork.ssid] = wifiNetwork;
                     }
-
-                    console.log(savedNetworkBySsid);
                 }
                 else {
                     let p = elem('p');
                     p.textContent = 'No saved networks';
                     wifiSavedNetworksListContainer.appendChild(p);
                 }
+            }
+        }
+
+        async function addNewConnection(ssid, password) {
+            password = password ? password : null;
+            let body = {
+                ssid,
+                password
+            }
+
+            let response = await request('/wifi/new_connection', 'POST', body);
+            if(response.ok) {
+                return true;
+            }
+            else {
+                // Connection was lost because of network change, operation successfull
+                if(response.aborted) {
+                    return true;
+                }
+
+                showError(`Adding wifi connection '${ssid}' failed: ${response.error ?? await response.text()}`, true);
+                return false;
+            }
+        }
+
+        async function changeActiveNetwork(ssid, wifiUuid) {
+            let response = await request('/wifi/change_active', 'POST', { wifiUuid });
+            if(response.ok) {
+                return true;
+            }
+            else {
+                // Connection was lost because of network change, operation successfull
+                if(response.aborted) {
+                    return true;
+                }
+
+                showError(`Connecting to wifi '${ssid}' failed: ${response.error ?? await response.text()}`, true);
+                return false;
             }
         }
 
@@ -437,7 +536,10 @@
                 return await fetch(`http://${robotInfo.ipAddress}:5000${endpoint}`, options);
             }
             catch(ex) {
-                return { ok: false, error: ex }
+                if(options.signal.aborted)
+                    return { ok: false, error: 'aborted', aborted: true };
+                else
+                    return { ok: false, error: ex }
             }
         }
 
@@ -550,7 +652,8 @@
         function createWifiAccessPointListItem(wifiAp, isSaved) {
             let wifiListItem = elem('div', 'wifi-list-item');
             wifiListItem.setAttribute('data-ssid', wifiAp.ssid);
-            wifiListItem.setAttribute('is-saved-network', isSaved ? 'true' : 'false');
+            wifiListItem.setAttribute('data-is-saved-network', isSaved ? 'true' : 'false');
+            wifiListItem.setAttribute('data-requires-password', wifiAp.securityProtocol != "Open" ? 'true' : 'false');
             {
                 let wifiInfo = elem('div', 'wifi-info');
                 {
