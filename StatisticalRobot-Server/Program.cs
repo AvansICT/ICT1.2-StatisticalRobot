@@ -122,7 +122,7 @@ static async void RunBackupHotspotCheck()
         System.Console.WriteLine("[Hotspot] Checking if connected to wifi...");
 
         // Last check, have we connected to a network after some time
-        if(await NetworkManager.IsConnectedToWifiNetwork())
+        if(!await NetworkManager.IsConnectedToWifiNetwork())
         {
             System.Console.WriteLine("[Hotspot] Wifi not connected, activating backup hotspot!");
 
