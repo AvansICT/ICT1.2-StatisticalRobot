@@ -14,6 +14,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
+            padding-bottom: 200px;
         }
 
         #robot-options-container {
@@ -164,7 +165,7 @@
     </style>
 </head>
 <body>
-    <div>
+    <div style="position: sticky; top: 17px">
         <h1 style="margin-bottom: 2px; color: var(--vscode-settings-headerForeground);">Setup Robot <span class="robot-name"></span></h1>
         <p class="robot-ip-address" style="font-style: italic; margin-top: 2px"></p>
     </div>
@@ -250,7 +251,7 @@
                 isInErrorState = false;
                 errorOverlay.style.display = 'none';
 
-                showPageLoading(true);
+                showPageLoading(true, "Reconnecting to robot...");
                 connectToRobot();
             });
 
@@ -270,6 +271,7 @@
             .addEventListener('click', async () => {
                 if(await showConfirm(`Are you sure you want to shutdown robot ${robotInfo.simpleId}?`)) {
                     showRobotOptions(false);
+                    showPageLoading(true, "Shutting down...");
                     await request('/power/shutdown', 'POST');
                     showError('The robot has shutdown. You can close this page now', false);
                 }
@@ -279,6 +281,7 @@
             .addEventListener('click', async () => {
                 if(await showConfirm(`Are you sure you want to reboot robot ${robotInfo.simpleId}?`)) {
                     showRobotOptions(false);
+                    showPageLoading(true, "Rebooting...");
                     await request('/power/reboot', 'POST');
                     showError('The robot is rebooting. You can close this page now');
                 }
@@ -443,11 +446,17 @@
             isInErrorState = true;
         }
 
-        function showPageLoading(show) {
+        function showPageLoading(show, message) {
             if(show === undefined)
                 show = true;
 
-            $('#connecting-to-robot-container', true).style.display = show  ? '' : 'none';
+            const connectingContainer = $('#connecting-to-robot-container', true);
+
+            connectingContainer.style.display = show  ? '' : 'none';
+
+            if(show) {
+                connectingContainer.querySelector('p').textContent = message;
+            }
         }
 
         function showRobotOptions(show) {
