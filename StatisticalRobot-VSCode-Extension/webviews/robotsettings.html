@@ -50,7 +50,7 @@
             font-size: 18px;
         }
 
-        #wifi-password-form {
+        .overlay-form {
             background-color: var(--vscode-editor-background); 
             border-radius: 10px; 
             padding: 20px;
@@ -181,8 +181,19 @@
         <div class="loading-animation"></div>
     </div>
 
+    <div id="confirm-overlay" class="overlay" style="display: none;">
+        <div class="overlay-form" style="min-width: 400px;">
+            <h2 style="margin-top: 0; margin-bottom: 5px;">Confirm</h2>
+            <p id="confirm-overlay-msg">Are you sure?</p>
+            <div class="button-container">
+                <button id="btn-confirm-overlay-yes">Yes</button>
+                <button id="btn-confirm-overlay-no">No</button>
+            </div>
+        </div>
+    </div>
+
     <div id="overlay-enter-wifi-password" class="overlay" style="display: none">
-        <div id="wifi-password-form">
+        <div id="wifi-password-form" class="overlay-form">
             <h2 style="margin-top: 0">Enter WiFi password</h2>
 
             <label for="input-wifi-password">Wifi Name</label>
@@ -252,19 +263,25 @@
                 }
             });
 
+        const confirmOverlay = $('#confirm-overlay', true);
+
         const powerOptionsContainer = $('#robot-power-options', true);
         powerOptionsContainer.querySelector('#btn-robot-shutdown')
             .addEventListener('click', async () => {
-                // TODO: add confirm
-                request('/power/shutdown', 'POST');
-                showError('The robot has shutdown');
+                if(await showConfirm(`Are you sure you want to shutdown robot ${robotInfo.simpleId}?`)) {
+                    showRobotOptions(false);
+                    await request('/power/shutdown', 'POST');
+                    showError('The robot has shutdown. You can close this page now', false);
+                }
             });
 
         powerOptionsContainer.querySelector('#btn-robot-reboot')
             .addEventListener('click', async () => {
-                // TODO: add confirm
-                request('/power/reboot', 'POST');
-                showError('The robot has shutdown');
+                if(await showConfirm(`Are you sure you want to reboot robot ${robotInfo.simpleId}?`)) {
+                    showRobotOptions(false);
+                    await request('/power/reboot', 'POST');
+                    showError('The robot is rebooting. You can close this page now');
+                }
             });
             
 
@@ -415,7 +432,12 @@
             $('#wifi-accesspoint-refresh-indicator', true).style.display = show ? 'block' : 'none';
         }
 
-        function showError(message) {
+        function showError(message, showRetry) {
+            if(showRetry === undefined)
+                showRetry = true;
+
+            errorOverlay.querySelector('#btn-error-retry').style.display = showRetry ? '' : 'none';
+
             errorOverlay.querySelector('#robot-error-msg').textContent = message;
             errorOverlay.style.display = '';
             isInErrorState = true;
@@ -454,6 +476,34 @@
                 
                 wifiPasswordOverlay.style.display = '';
                 inputPassword.focus();
+            });
+        }
+
+        function showConfirm(message) {
+            return new Promise((resolve, reject) => {
+                confirmOverlay.querySelector('#confirm-overlay-msg')
+                    .textContent = message;
+
+                // Use an abort signal to remove the event listener after making a choice
+                let abortController = new AbortController();
+
+                confirmOverlay.addEventListener('click', (e) => {
+
+                        if(e.target.id == 'btn-confirm-overlay-yes') {
+                            abortController.abort(); // remove the event listener
+                            confirmOverlay.style.display = 'none';
+                            resolve(true);
+                        }
+                        else if(e.target.id == 'btn-confirm-overlay-no') {
+                            abortController.abort(); // remove the event listener
+                            confirmOverlay.style.display = 'none';
+                            resolve(false);
+                        }
+                        // else: ignore
+                        
+                    }, { signal: abortController.signal });
+
+                confirmOverlay.style.display = '';
             });
         }
 
