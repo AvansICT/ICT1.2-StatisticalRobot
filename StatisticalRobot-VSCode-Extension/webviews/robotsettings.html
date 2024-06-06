@@ -7,13 +7,98 @@
 
     <style>
 
+        main {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #robot-options-container {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        #robot-options-container>* {
+            width: 100%;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+            background-color: rgba(0 0 0 / 80%);
+        }
+
+        #robot-error-container {
+            z-index: 200;
+        }
+
+        #robot-error-msg {
+            color: var(--vscode-errorForeground);
+            font-size: 18px;
+        }
+
+        #wifi-password-form {
+            background-color: var(--vscode-editor-background); 
+            border-radius: 10px; 
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #robot-power-options>.button-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            width: 100%;
+        }
+
+        #robot-power-options>.button-container>* {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        h2 {
+            font-size: 26px;
+            font-weight: 600;
+            color: var(--vscode-settings-headerForeground);
+        }
+
         div.loading-animation {
             border: 4px solid var(--vscode-editor-foreground);
             border-top: 4px solid #23282c;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
+            width: 40px;
+            height: 40px;
             animation: loading-animation-spin 1s linear infinite;
+        }
+
+        input[type="password"] {
+            border: none;
+            background-color: var(--vscode-settings-textInputBackground);
+            color: var(--vscode-settings-textInputForeground);
+            padding: 5px;
+            font-size: 18px;
+            width: 300px;
+        }
+
+        input[type="password"]:focus {
+            outline: 1px solid var(--vscode-focusBorder);
         }
 
         @keyframes loading-animation-spin {
@@ -37,77 +122,127 @@
             cursor: not-allowed;
         }
 
+        .wifi-list:has(.loading-animation) {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+
+        .wifi-list .wifi-list-item {
+            border: 1px solid var(--vscode-editor-foreground);
+            border-radius: 5px;
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .wifi-list .wifi-list-item:not(:last-child) {
+            margin-bottom: 5px;
+        }
+
+        .wifi-list .wifi-list-item .wifi-info .wifi-name {
+            color: var(--vscode-settings-headerForeground);
+            display: block;
+            font-size: 18px;
+            font-weight: bolder;
+        }
+
+        .wifi-list .wifi-list-item .wifi-item-options button {
+            height: 100%;
+        }
+
+        #wifi-accesspoint-refresh-indicator {
+            position: absolute; 
+            top: 4px; 
+            right: 10px; 
+            width: 20px; 
+            height: 20px;
+        }
+
     </style>
 </head>
 <body>
     <div>
-        <h1 style="margin-bottom: 2px">Setup Robot <span class="robot-name"></span></h1>
+        <h1 style="margin-bottom: 2px; color: var(--vscode-settings-headerForeground);">Setup Robot <span class="robot-name"></span></h1>
         <p class="robot-ip-address" style="font-style: italic; margin-top: 2px"></p>
     </div>
 
-    <p id="robot-error-msg" style="color: var(--vscode-errorForeground); font-size: larger; display: none;">
-        An error has occured
-    </p>
+    <div id="robot-error-container" class="overlay" style="display: none">
+        <p id="robot-error-msg">
+            An error has occured
+        </p>
+        <button id="btn-error-retry">Reconnect</button>
+    </div>
 
-    <div id="connecting-to-robot-container">
+    <div id="connecting-to-robot-container" class="overlay">
         <p>Connecting to robot...</p>
         <div class="loading-animation"></div>
     </div>
 
-    <div id="robot-options-container" style="display: none;">
-        <div id="robot-power-options">
-            <h2>Power Options</h2>
+    <div id="overlay-enter-wifi-password" class="overlay" style="display: none">
+        <div id="wifi-password-form">
+            <h2 style="margin-top: 0">Enter WiFi password</h2>
 
-            <button id="btn-robot-shutdown">Shutdown</button>
-            <button id="btn-robot-reboot">Reboot</button>
-        </div>
+            <label for="input-wifi-password">Wifi Name</label>
+            <input type="password" name="wifi-password" id="input-wifi-password" placeholder="(password)">
 
-        <div id="robot-network-options">
-            <h2>WiFi Options</h2>
-
-            <div id="wifi-accesspoint-list-container">
-                <h3>Available WiFi Networks</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>SSID</th>
-                            <th>Quality</th>
-                            <th>Password Required</th>
-                            <th>Options</th>
-                        </tr>
-                    </thead>
-                    <tbody id="wifi-accesspoint-tbody"></tbody>
-                </table>
-            </div>
-
-            <div id="wifi-savednetworks-list-container">
-                <h3>Saved WiFi Networks</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>SSID</th>
-                            <th>IsActive</th>
-                            <th>AutoConnect</th>
-                            <th>Options</th>
-                        </tr>
-                    </thead>
-                    <tbody id="wifi-savednetworks-tbody"></tbody>
-                </table>
-            </div>
+            <button id="btn-connect-with-password">Connect</button>
         </div>
     </div>
+
+    <main>
+        <div id="robot-options-container" style="display: none;">
+            <div id="robot-power-options">
+                <h2>Power Options</h2>
+    
+                <div class="button-container">
+                    <button id="btn-robot-shutdown">Shutdown</button>
+                    <button id="btn-robot-reboot">Reboot</button>
+                </div>
+            </div>
+    
+            <div id="robot-network-options" style="position: relative;">
+                <h2>Connect to WiFi</h2>
+                <div id="wifi-accesspoint-refresh-indicator" class="loading-animation" style="display: none;"></div>
+
+                <div id="wifi-accesspoint-list-container" class="wifi-list">
+                    <!-- <p>
+                        No WiFi networks found
+                    </p> -->
+                </div>
+
+                <h2>Saved WiFi Networks</h2>
+
+                <div id="wifi-savednetworks-list-container" class="wifi-list">
+                    <!-- <p>
+                        No saved networks
+                    </p> -->
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script>
         let robotInfo = undefined;
         let isInErrorState = false;
 
-        const connectingToRobotContainer = $('#connecting-to-robot-container', true);
-        const robotOptionsContainer = $('#robot-options-container', true);
+        const wifiAccessPointListContainer = $('#wifi-accesspoint-list-container', true);
+        const wifiSavedNetworksListContainer = $('#wifi-savednetworks-list-container', true);
 
-        const powerOptionsContainer = robotOptionsContainer.querySelector('#robot-power-options');
-        const networkOptionsContainer = robotOptionsContainer.querySelector('#robot-network-options');
+        const errorOverlay = $('#robot-error-container', true);
 
+        const wifiPasswordOverlay = $('#overlay-enter-wifi-password', true);
+        wifiPasswordOverlay.querySelector('#input-wifi-password')
+            .addEventListener('keypress', (e) => {
+                if(e.keyCode == 13) { // enter
+                    e.preventDefault();
+                    wifiPasswordOverlay.querySelector('#btn-connect-with-password').click();
+                }
+            });
 
+        const powerOptionsContainer = $('#robot-power-options', true);
         powerOptionsContainer.querySelector('#btn-robot-shutdown')
             .addEventListener('click', async () => {
                 // TODO: add confirm
@@ -143,9 +278,18 @@
             }
 
             if(await testConnection()) {
-                showOptions();
+                showPageLoading(false);
+
+                wifiAccessPointListContainer.appendChild(createDivLoadingAnimation());
+                wifiSavedNetworksListContainer.appendChild(createDivLoadingAnimation());
+
+                showRobotOptions(true);
+
+                refreshApList();
+                getSavedWifiNetworks();
             }
             else {
+                showPageLoading(false);
                 showError(`Could not connect to robot ${robotInfo.simpleId} on ${robotInfo.ipAddress}`);
             }
         });
@@ -156,16 +300,8 @@
             return response.ok && await response.text() == "pong!"
         }
 
-        function showOptions() {
-            connectingToRobotContainer.style.display = 'none';
-            robotOptionsContainer.style.display = '';
-
-            refreshApList();
-            getSavedWifiNetworks();
-        }
-
         async function refreshApList() {
-            console.log('refresh ap list');
+            showAccessPointRefreshAnimation(true);
 
             try {
                 let response = await request('/wifi/ap_list');
@@ -174,25 +310,18 @@
                     let apList = await response.json();
                     
                     apList = apList.sort((a, b) => b.signalQuality - a.signalQuality);
-                    console.log(apList);
 
-                    const wifiAccesspointTbody = $('#wifi-accesspoint-tbody', true);
-
-                    wifiAccesspointTbody.innerHTML = '';
+                    clearAccessPointList(false);
                     for(const ap of apList) {
-                        let tr = document.createElement('tr');
-
-                        tr.appendChild(createTd(ap.ssid));
-                        tr.appendChild(createTd(ap.signalQuality));
-                        tr.appendChild(createTd(ap.securityProtocol === 'Open' ? 'No' : 'Yes'));
-                        tr.appendChild(createTd(''));
-
-                        wifiAccesspointTbody.appendChild(tr);
+                        wifiAccessPointListContainer.appendChild(createWifiAccessPointListItem(ap));
                     }
                 }
             }
             catch(e) {
                 // Todo
+            }
+            finally {
+                showAccessPointRefreshAnimation(false);
             }
 
             if(!isInErrorState)
@@ -205,17 +334,10 @@
             if(response.ok) {
                 let wifiList = await response.json();
 
-                const wifiSavedNetworksTbody = $('#wifi-savednetworks-tbody', true);
+                clearSavedNetworksList(false);
 
-                wifiSavedNetworksTbody.innerHtml = '';
                 for(const wifiNetwork of wifiList) {
-                    let tr = document.createElement('tr');
-                    tr.appendChild(createTd(wifiNetwork.ssid));
-                    tr.appendChild(createTd(wifiNetwork.isActive ? 'Yes' : 'No'));
-                    tr.appendChild(createTd(wifiNetwork.autoConnect ? 'Yes' : 'No'));
-                    tr.appendChild(createTd(''));
-
-                    wifiSavedNetworksTbody.appendChild(tr);
+                    wifiSavedNetworksListContainer.appendChild(createWifiSavedNetworkListItem(wifiNetwork));
                 }
             }
         }
@@ -250,23 +372,147 @@
             }
         }
 
-        function showError(error) {
-            isInErrorState = true;
+        function clearAccessPointList(showLoading) {
+            wifiAccessPointListContainer.innerHTML = '';
 
-            const robotErrorMsg = $('#robot-error-msg', true);
-
-            robotErrorMsg.textContent = error;
-            robotErrorMsg.style.display = '';
-
-            const buttons = $('button');
-            for(let button of buttons)
-                button.disabled = true;
+            if(showLoading)
+                wifiAccessPointListContainer.appendChild(createDivLoadingAnimation());
         }
 
-        function createTd(content) {
-            let td = document.createElement('td');
-            td.textContent = content;
-            return td;
+        function clearSavedNetworksList(showLoading) {
+            wifiSavedNetworksListContainer.innerHTML = '';
+
+            if(showLoading)
+                wifiSavedNetworksListContainer.appendChild(createDivLoadingAnimation());
+        }
+
+        function showAccessPointRefreshAnimation(show) {
+            if(show === undefined)
+                show = true;
+
+            $('#wifi-accesspoint-refresh-indicator', true).style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            errorOverlay.querySelector('#robot-error-msg').textContent = message;
+            errorOverlay.style.display = '';
+            isInErrorState = true;
+        }
+
+        function showPageLoading(show) {
+            if(show === undefined)
+                show = true;
+
+            $('#connecting-to-robot-container', true).style.display = show  ? '' : 'none';
+        }
+
+        function showRobotOptions(show) {
+            if(show === undefined)
+                show = true;
+
+            $('#robot-options-container', true).style.display = show ? '' : 'none';
+        }
+
+        function enterWifiPassword(wifiAp) {
+            return new Promise((resolve, reject) => {
+                wifiPasswordOverlay.querySelector('label[for="input-wifi-password"]')
+                    .textContent = wifiAp.ssid;
+
+                const inputPassword = wifiPasswordOverlay.querySelector('#input-wifi-password');
+
+                wifiPasswordOverlay.querySelector('#btn-connect-with-password')
+                    .addEventListener('click', (e) => {
+                        wifiPasswordOverlay.style.display = 'none';
+
+                        let result = inputPassword.value;
+                        inputPassword.value = '';
+
+                        resolve(result);
+                    }, { once: true });
+                
+                wifiPasswordOverlay.style.display = '';
+                inputPassword.focus();
+            });
+        }
+
+        function createDivLoadingAnimation() {
+            return elem('div', 'loading-animation');
+        }
+
+        function createWifiAccessPointListItem(wifiAp) {
+            let wifiListItem = elem('div', 'wifi-list-item');
+            wifiListItem.setAttribute('data-ssid', wifiAp.ssid);
+            {
+                let wifiInfo = elem('div', 'wifi-info');
+                {
+                    let wifiName = elem('span', 'wifi-name');
+                    wifiName.textContent = wifiAp.ssid;
+
+                    wifiInfo.appendChild(wifiName);
+
+                    let wifiDetails = elem('span', 'wifi-details');
+                    wifiDetails.textContent = `${wifiAp.inUse ? 'Connected - ' : ''}${wifiAp.signalQuality}% - ${wifiAp.securityProtocol}`;
+
+                    wifiInfo.appendChild(wifiDetails);
+                }
+                wifiListItem.appendChild(wifiInfo);
+
+                let wifiItemOptions = elem('div', 'wifi-item-options');
+                {
+                    if(!wifiAp.inUse) {
+                        let btnWifiConnect = elem('button', 'btn-wifi-connect');
+                        btnWifiConnect.textContent = 'Connect';
+
+                        wifiItemOptions.appendChild(btnWifiConnect);
+                    }
+                }
+
+                wifiListItem.appendChild(wifiItemOptions);
+            }
+
+            return wifiListItem;
+        }
+
+        function createWifiSavedNetworkListItem(savedWifi) {
+            let wifiListItem = elem('div', 'wifi-list-item');
+            wifiListItem.setAttribute('data-ssid', savedWifi.ssid);
+            {
+                let wifiInfo = elem('div', 'wifi-info');
+                {
+                    let wifiName = elem('span', 'wifi-name');
+                    wifiName.textContent = savedWifi.ssid;
+
+                    wifiInfo.appendChild(wifiName);
+
+                    let wifiDetails = elem('span', 'wifi-details');
+                    wifiDetails.textContent = `Autoconnect: ${savedWifi.autoConnect ? 'Yes' : 'No'}`;
+
+                    wifiInfo.appendChild(wifiDetails);
+                }
+                wifiListItem.appendChild(wifiInfo);
+
+                let wifiItemOptions = elem('div', 'wifi-item-options');
+                {
+                    let btnWifiRemove = elem('button', 'btn-wifi-remove');
+                    btnWifiRemove.textContent = 'Remove';
+
+                    wifiItemOptions.appendChild(btnWifiRemove);
+                }
+
+                wifiListItem.appendChild(wifiItemOptions);
+            }
+
+            return wifiListItem;
+        }
+
+        function elem(tagName, ...classList) {
+            let result = document.createElement(tagName);
+
+            for(const classToAdd of classList) {
+                result.classList.add(classToAdd);
+            }
+
+            return result;
         }
 
         function $(selector, first) {
