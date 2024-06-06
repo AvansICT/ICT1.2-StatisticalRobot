@@ -107,9 +107,6 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		);
 
-		// TODO: fix this
-		// settingsView.iconPath = vscode.Uri.joinPath(vscode.Uri.parse(__dirname), '../resources/robot-icon.svg');
-
 		designView.webview.html = fs.readFileSync(path.join(__dirname, '..', 'webviews', 'design.html')).toString();
 	}));
 
@@ -145,6 +142,30 @@ export function activate(context: vscode.ExtensionContext) {
 		if(e.affectsConfiguration('avans-statisticalrobot.connected-robot')) {
 			robotListProvider.refresh();
 		}
+	}));
+
+	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.fallbackChangeLocalRobotSettings', async () => {
+		// TODO only allow one settings view to open per robot
+		const settingsView = vscode.window.createWebviewPanel(
+			'statisticalrobot-settingsview',
+			`Settings Local Robot`, 
+			vscode.ViewColumn.Active,
+			{
+				enableScripts: true,
+				retainContextWhenHidden: true
+			}
+		);
+
+		// TODO: fix this
+		// settingsView.iconPath = vscode.Uri.joinPath(vscode.Uri.parse(__dirname), '../resources/robot-icon.svg');
+
+		settingsView.webview.html = fs.readFileSync(path.join(__dirname, '..', 'webviews', 'robotsettings.html')).toString();
+
+		settingsView.webview.postMessage({
+			id: 'local',
+			ipAddress: 'raspberrypi.local',
+			simpleId: 'local'
+		});
 	}));
 
 	context.subscriptions.push(...disposables);

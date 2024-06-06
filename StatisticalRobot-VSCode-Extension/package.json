@@ -59,6 +59,10 @@
       {
         "command": "avans-statisticalrobot.connectedRobotIpAddress",
         "title": "Statistical Robot: IP Address"
+      },
+      {
+        "command": "avans-statisticalrobot.fallbackChangeLocalRobotSettings",
+        "title": "Statistical Robot: Change Local Robot Settings over MDNS"
       }
     ],
     "viewsContainers": {
