@@ -240,6 +240,9 @@
         let robotInfo = undefined;
         let isInErrorState = false;
 
+        let apBySsid = {};
+        let savedNetworkBySsid = {};
+
         const wifiAccessPointListContainer = $('#wifi-accesspoint-list-container', true);
         const wifiSavedNetworksListContainer = $('#wifi-savednetworks-list-container', true);
 
@@ -320,8 +323,9 @@
 
                     showRobotOptions(true);
 
-                    refreshApList();
-                    getSavedWifiNetworks();
+                    // We need to load saved networks list first
+                    await getSavedWifiNetworks();
+                    await refreshApList();
                 }
                 else {
                     showPageLoading(false);
@@ -350,10 +354,22 @@
                     let apList = await response.json();
                     
                     apList = apList.sort((a, b) => b.signalQuality - a.signalQuality);
+                    apBySsid = {};
 
                     clearAccessPointList(false);
-                    for(const ap of apList) {
-                        wifiAccessPointListContainer.appendChild(createWifiAccessPointListItem(ap));
+                    if(apList.length > 0) {
+                        for(const ap of apList) {
+                            wifiAccessPointListContainer.appendChild(createWifiAccessPointListItem(ap, ap.ssid in savedNetworkBySsid));
+                            
+                            apBySsid[ap.ssid] = ap;
+                        }
+
+                        console.log(apBySsid);
+                    }
+                    else {
+                        let p = elem('p');
+                        p.textContent = 'No WiFi networks found';
+                        wifiAccessPointListContainer.appendChild(p);
                     }
                 }
             }
@@ -373,11 +389,22 @@
 
             if(response.ok) {
                 let wifiList = await response.json();
+                savedNetworkBySsid = {};
 
                 clearSavedNetworksList(false);
 
-                for(const wifiNetwork of wifiList) {
-                    wifiSavedNetworksListContainer.appendChild(createWifiSavedNetworkListItem(wifiNetwork));
+                if(wifiList.length > 0) {
+                    for(const wifiNetwork of wifiList) {
+                        wifiSavedNetworksListContainer.appendChild(createWifiSavedNetworkListItem(wifiNetwork));
+                        savedNetworkBySsid[wifiNetwork.ssid] = wifiNetwork;
+                    }
+
+                    console.log(savedNetworkBySsid);
+                }
+                else {
+                    let p = elem('p');
+                    p.textContent = 'No saved networks';
+                    wifiSavedNetworksListContainer.appendChild(p);
                 }
             }
         }
@@ -520,9 +547,10 @@
             return elem('div', 'loading-animation');
         }
 
-        function createWifiAccessPointListItem(wifiAp) {
+        function createWifiAccessPointListItem(wifiAp, isSaved) {
             let wifiListItem = elem('div', 'wifi-list-item');
             wifiListItem.setAttribute('data-ssid', wifiAp.ssid);
+            wifiListItem.setAttribute('is-saved-network', isSaved ? 'true' : 'false');
             {
                 let wifiInfo = elem('div', 'wifi-info');
                 {
@@ -557,6 +585,7 @@
         function createWifiSavedNetworkListItem(savedWifi) {
             let wifiListItem = elem('div', 'wifi-list-item');
             wifiListItem.setAttribute('data-ssid', savedWifi.ssid);
+            wifiListItem.setAttribute('data-uuid', savedWifi.uuid);
             {
                 let wifiInfo = elem('div', 'wifi-info');
                 {
