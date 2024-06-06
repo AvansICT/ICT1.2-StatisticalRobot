@@ -438,8 +438,20 @@
             return response.ok && await response.text() == "pong!"
         }
 
+        let refreshApTimeout = undefined;
+        let isApListRefreshing = false;
         async function refreshApList() {
+            if(isApListRefreshing)
+                return;
+            
             showAccessPointRefreshAnimation(true);
+
+            if(refreshApTimeout !== undefined) {
+                clearTimeout(refreshApTimeout);
+                refreshApTimeout = undefined;
+            }
+
+            isApListRefreshing = true;
 
             try {
                 let response = await request('/wifi/ap_list');
@@ -470,10 +482,11 @@
             }
             finally {
                 showAccessPointRefreshAnimation(false);
+                isApListRefreshing = false;
             }
 
-            if(!isInErrorState)
-                setTimeout(refreshApList, 10000);
+            if(!isInErrorState && refreshApTimeout === undefined)
+                refreshApTimeout = setTimeout(refreshApList, 10000);
         }
 
         async function getSavedWifiNetworks() {
