@@ -62,7 +62,7 @@
       },
       {
         "command": "avans-statisticalrobot.fallbackChangeLocalRobotSettings",
-        "title": "Statistical Robot: Change Local Robot Settings over MDNS"
+        "title": "Statistical Robot: Change Robot Settings over IP"
       }
     ],
     "viewsContainers": {

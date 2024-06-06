@@ -145,6 +145,15 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	disposables.push(vscode.commands.registerCommand('avans-statisticalrobot.fallbackChangeLocalRobotSettings', async () => {
+		let ip = await vscode.window.showInputBox({
+			title: 'IP Address or Host',
+			value: 'raspberrypi.local'
+		});
+
+		if(!ip) {
+			return;
+		}
+
 		// TODO only allow one settings view to open per robot
 		const settingsView = vscode.window.createWebviewPanel(
 			'statisticalrobot-settingsview',
@@ -163,7 +172,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		settingsView.webview.postMessage({
 			id: 'local',
-			ipAddress: 'raspberrypi.local',
+			ipAddress: ip,
 			simpleId: 'local'
 		});
 	}));
