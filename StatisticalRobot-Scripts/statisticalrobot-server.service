@@ -5,6 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
+Environment="ASPNETCORE_URLS=http://*:5000"
 ExecStart=/opt/dotnet_8.0/dotnet /opt/StatisticalRobot-Server/StatisticalRobot-Server.dll
 Restart=always
 RestartSec=3

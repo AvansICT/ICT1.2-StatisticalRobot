@@ -75,14 +75,14 @@ echo "dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4" | sudo tee -a /boot/fir
 echo "[Setup] Creating ram-disk for C# projects"
 sudo mkdir /mnt/csprojects
 
-# Add a tmpfs filesystem (ram-based filesystem) in folder /mnt/csprojects for user rompi with read/write permissions
-echo "none /mnt/csprojects tmpfs nodev,nosuid,nodiratime,size=2048M,umask=0022,gid=1000,uid=1000 0 0" | sudo tee -a /etc/fstab > /dev/null
+# Add a 2gb large tmpfs filesystem (ram-based filesystem) in folder /mnt/csprojects for user rompi with read/write permissions
+echo "tmpfs /mnt/csprojects tmpfs size=2048M,mode=755,gid=1000,uid=1000,exec 0 0" | sudo tee -a /etc/fstab > /dev/null
 
 # Load the created filesystem and update permissions
 sudo mount -a
 sudo systemctl daemon-reload
-sudo chmod -R 755 /mnt/csprojects
 sudo chown -R 1000:1000 /mnt/csprojects
+sudo chmod -R 755 /mnt/csprojects
 
 # Setup StatisticalRobot-Server
 
@@ -93,7 +93,7 @@ git clone https://github.com/AvansICT/ICT1.2-StatisticalRobot.git /tmp/ICT1.2-St
 dotnet publish /tmp/ICT1.2-StatisticalRobot/StatisticalRobot-Server
 
 # Install StatisticalRobot-Server to /opt
-mkdir /opt/StatisticalRobot-Server
+sudo mkdir /opt/StatisticalRobot-Server
 sudo mv /tmp/ICT1.2-StatisticalRobot/StatisticalRobot-Server/bin/Release/net$DOTNET_VERSION/publish/* /opt/StatisticalRobot-Server
 sudo chmod -R 755 /opt/StatisticalRobot-Server
 
@@ -106,4 +106,4 @@ sudo systemctl enable statisticalrobot-server.service
 # Setup finished
 echo ""
 echo "[Setup] Installation succesfull"
-echo "[Setup] Please reboot the device now!
+echo "[Setup] Please reboot the device now!"
