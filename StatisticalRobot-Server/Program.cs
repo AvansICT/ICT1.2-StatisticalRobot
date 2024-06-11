@@ -5,10 +5,10 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<RobotDiscoveryServ
 
 builder.Services.AddCors();
 
-// Known fire and forget, shouldn't matter too much if this fails
-var hotspotTask = Task.Run(RunBackupHotspotCheck);
-
 var app = builder.Build();
+
+// Known fire and forget, shouldn't matter too much if this fails
+var hotspotTask = Task.Run(() => RunBackupHotspotCheck(app.Logger));
 
 app.UseCors(builder => 
     builder
@@ -94,7 +94,7 @@ app.MapPost("/power/reboot", async () =>
 
 app.Run();
 
-static async void RunBackupHotspotCheck()
+static async void RunBackupHotspotCheck(ILogger logger)
 {
     try
     {
@@ -134,8 +134,8 @@ static async void RunBackupHotspotCheck()
             System.Console.WriteLine("[Hotspot] Wifi already connected!");
         }
     }
-    catch (Exception)
+    catch (Exception ex)
     {
-        // Too bad
+        logger.LogError(ex, "[Hotspot] Exception occured");
     }
 }

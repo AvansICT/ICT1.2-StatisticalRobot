@@ -35,16 +35,20 @@ public class RobotDiscoveryService : BackgroundService
             {
                 string request = Encoding.ASCII.GetString(udpResult.Buffer);
 
-                this.logger.LogInformation($"Discovery from {udpResult.RemoteEndPoint}, with data: {request}");
-
                 if(request == "STATROBOT_V0.0_DISCOV")
                 {
+                    this.logger.LogInformation($"Discovery from {udpResult.RemoteEndPoint}");
+
                     // int port = int.Parse(request.Substring(request.LastIndexOf('_') + 1));
 
                     // this.logger.LogInformation($"Sending response to {udpResult.RemoteEndPoint.Address}:{port}");
 
                     byte[] response = Encoding.ASCII.GetBytes($"STATROBOT_V0.0_ACK_{await Utility.GetPiSerialNumber()}");
                     await client.SendAsync(response, udpResult.RemoteEndPoint, cancelToken);
+                }
+                else 
+                {
+                    this.logger.LogInformation($"Unknown/invalid request from {udpResult.RemoteEndPoint}");
                 }
             }
             catch(Exception ex) 
