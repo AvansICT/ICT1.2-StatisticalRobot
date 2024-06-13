@@ -71,6 +71,11 @@ sudo raspi-config nonint do_serial_hw 0 # 0 means on
 echo "[Setup] Enabling PWM on pin 12 & pin 13"
 echo "dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4" | sudo tee -a /boot/firmware/config.txt > /dev/null
 
+# Disable bluetooth, it is not needed and consumes battery power
+echo "[Setup] Disabling and removing bluetooth support"
+sudo systemctl disable bluetooth.service
+echo "dtoverlay=disable-bt" | sudo tee -a /boot/firmware/config.txt > /dev/null
+
 # Setup memory disk for C# projects
 echo "[Setup] Creating ram-disk for C# projects"
 sudo mkdir /mnt/csprojects
@@ -103,7 +108,30 @@ sudo chmod 644 /etc/systemd/system/statisticalrobot-server.service
 sudo systemctl daemon-reload
 sudo systemctl enable statisticalrobot-server.service
 
+# Disable swapfile to reduce wear on SD (Swapfile is by default 100mb, so already negligible)
+echo "[Setup] Disabling and removing swapfile"
+sudo dphys-swapfile swapoff
+sudo dphys-swapfile uninstall
+sudo update-rc.d dphys-swapfile remove
+
+# Disable automatic updates, so the pi won't suddenly update
+echo "[Setup] Disable automatic updates"
+sudo systemctl mask man-db.timer
+sudo systemctl mask apt-daily.timer
+sudo systemctl mask apt-daily-upgrade.timer
+
+# Disable writing systemlogs to reduce sd card wear
+echo "[Setup] Disable systemlogs writing to disk"
+sudo sed -i '/#Storage=auto/c\Storage=none' /etc/systemd/journald.conf
+sudo systemctl daemon-reload
+
+# Clean-Up setup files and not needed programs
+echo "[Setup] Cleaning up..."
+sudo apt remove -y --purge triggerhappy dphys-swapfile bluez git
+sudo apt autoremove -y --purge
+
 # Setup finished
 echo ""
 echo "[Setup] Installation succesfull"
 echo "[Setup] Please reboot the device now!"
+echo "[Setup] After reboot, it's possible to create an image"
