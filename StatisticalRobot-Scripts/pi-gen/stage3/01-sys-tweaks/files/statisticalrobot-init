@@ -1,0 +1,30 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          statisticalrobot-init
+# Required-Start:
+# Required-Stop:
+# Default-Start: 3
+# Default-Stop:
+# Short-Description: Enables GPIO Peripherals
+# Description:
+### END INIT INFO
+
+# IMPORTANT!!!!
+# If you modify this file using windows, MAKE SURE that you save it in linux format
+# This means, use '\n' (line-feat, LF) as new-line and not windows: '\r\n' (Criage-Return+Line-feat, CRLF)!!!
+# THIS IS VERY IMPORTANT, or else this file won't execute in the image
+
+case "$1" in
+  start)
+    # 0 means on
+    raspi-config nonint do_i2c 0 &&
+    raspi-config nonint do_spi 0 &&
+    raspi-config nonint do_serial_hw 0 &&
+    update-rc.d statisticalrobot-init remove &&
+    rm /etc/init.d/statisticalrobot-init
+    ;;
+  *)
+    echo "Usage: $0 start" >&2
+    exit 3
+    ;;
+esac

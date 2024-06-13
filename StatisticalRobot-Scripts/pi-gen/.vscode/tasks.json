@@ -1,0 +1,71 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build image using docker (Recommended)",
+            "type": "shell",
+            "group": "build",
+            "isBackground": false,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "promptOnClose": true,
+            "linux": {
+                "command": "./build-docker.sh"
+            },
+            "windows": {
+                "command": "wsl -e ./build-docker.sh",
+            }
+        },
+        {
+            "label": "Build image using docker (Cached Container)",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "isBackground": false,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "promptOnClose": true,
+            "linux": {
+                "command": "./build-docker.sh"
+            },
+            "windows": {
+                "command": "wsl -e bash -c 'export PRESERVE_CONTAINER=1; export CONTINUE=1; ./build-docker.sh'",
+            }
+        },
+        {
+            "label": "Build image",
+            "type": "shell",
+            "group": "build",
+            "isBackground": false,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "promptOnClose": true,
+            "linux": {
+                "command": "sudo ./build.sh"
+            },
+            "windows": {
+                "command": "wsl -e sudo ./build.sh"
+            }
+        }
+    ]
+}
