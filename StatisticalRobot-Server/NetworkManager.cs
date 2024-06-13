@@ -270,7 +270,7 @@ internal class NetworkManager
                         // I know, it's insecure, but also easy for the students
                         // The main purpose is to keep other students form other studies away
                         // The usage of the backup hotspot is also temporarly
-                        .Add("avansti123");
+                        .Add("avansict42");
                 })
                 .ExecuteAsync();
         }
