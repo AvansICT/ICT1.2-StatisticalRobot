@@ -10,8 +10,7 @@ ushort batteryData = Robot.ReadBatteryMillivolts();
 Console.WriteLine(batteryData);
 
 Robot.SetAnalogType("input",0);
-int valueAnalog0 = Robot.AnalogRead(0);
-Console.WriteLine(valueAnalog0);
+int valueAnalog0 = 0;
 
 bool [] buttonData = Robot.ReadButtons();
 bool buttonA = buttonData[0];
@@ -29,6 +28,9 @@ while(!(buttonA && buttonB))
     Console.WriteLine(buttonA);
     Console.WriteLine(buttonB);
     Console.WriteLine(buttonC);
+
+    Robot.AnalogRead(0);
+    Console.WriteLine(valueAnalog0);
 
     if(buttonB&&buttonC)
     {

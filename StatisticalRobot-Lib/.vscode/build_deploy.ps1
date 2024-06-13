@@ -58,7 +58,7 @@ else {
 }
 
 Write-Output "Cleaning old build files on remote..."
-ssh rompi@$ip "for pid in `$(ps -ef | grep \`"RobotProject.dll\`" | grep -v \`"grep\`" | awk '{print `$2}'); do sudo kill -9 `$pid > /dev/null 2> /dev/null || :; done && mkdir -p \`"/home/rompi/csprojects/${workspaceFolderBasename}/\`" && rm -rf \`"/home/rompi/csprojects/${workspaceFolderBasename}/*\`""
+ssh rompi@$ip "for pid in `$(ps -ef | grep \`"RobotProject.dll\`" | grep -v \`"grep\`" | awk '{print `$2}'); do sudo kill -9 `$pid > /dev/null 2> /dev/null || :; done && mkdir -p \`"/mnt/csprojects/${workspaceFolderBasename}/\`" && rm -rf \`"/mnt/csprojects/${workspaceFolderBasename}/*\`""
 
 if (-Not $?) {
     Write-Output "Cleaning old files failed!"
@@ -69,11 +69,11 @@ Write-Output "Deploying program to remote"
 
 if($ipVersion -eq [System.Net.Sockets.AddressFamily]::InterNetworkV6) {
     # IPv6
-    scp -6 -r "./bin/Debug/net8.0/*" "rompi@[${ip}]:'/home/rompi/csprojects/${workspaceFolderBasename}/'"
+    scp -6 -r "./bin/Debug/net8.0/*" "rompi@[${ip}]:'/mnt/csprojects/${workspaceFolderBasename}/'"
 }
 else {
     # IPv4
-    scp -r "./bin/Debug/net8.0/*" "rompi@${ip}:'/home/rompi/csprojects/${workspaceFolderBasename}/'"
+    scp -r "./bin/Debug/net8.0/*" "rompi@${ip}:'/mnt/csprojects/${workspaceFolderBasename}/'"
 }
 
 if (-Not $?) {

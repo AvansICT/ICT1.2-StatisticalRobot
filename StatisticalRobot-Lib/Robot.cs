@@ -9,7 +9,7 @@ public static class Robot {
 
     private static I2cBus i2cBus = I2cBus.Create(1);
     private static I2cDevice romi32u4 = i2cBus.CreateDevice(20);
-    private static I2cDevice grovePiAnalog = i2cBus.CreateDevice(1);
+    private static I2cDevice grovePiAnalog = i2cBus.CreateDevice(8);
     private static GpioController gpioController = new GpioController();
     private static PwmChannel pwm;
     private static bool pwmState;
@@ -141,7 +141,7 @@ public static class Robot {
 
     public static int AnalogRead(byte pin)
     {
-        byte[] b = [3, pin, 0, 0];
+        byte[] b = [1, 3, pin, 0, 0];
         try
         {
             grovePiAnalog.Write(b);
@@ -164,8 +164,9 @@ public static class Robot {
     public static void SetAnalogType(string mode, byte pin)
     {
         byte[] b;
-        if(mode == "output") b = [5, pin, 1, 0];
-        else b = [5, pin, 0, 0];
+        if(mode.ToLower() == "output") b = [5, pin, 1, 0];
+        if(mode.ToLower() == "input") b = [5, pin, 0, 0];
+        else throw new ArgumentException("Mode is not supported.");
         grovePiAnalog.Write(b);
         Thread.Sleep(1);
     }

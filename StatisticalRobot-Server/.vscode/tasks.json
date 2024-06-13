@@ -18,7 +18,7 @@
                 "Process;",
                 ".\\.vscode\\build_deploy.ps1",
                 "${workspaceFolderBasename}",
-				"raspberrypi.local"
+				"192.168.152.192"
             ],
 			"group": {
 				"kind": "build",
