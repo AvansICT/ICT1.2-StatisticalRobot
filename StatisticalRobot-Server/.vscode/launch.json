@@ -18,7 +18,7 @@
             "pipeTransport": {
                 "pipeCwd": "${workspaceFolder}",
                 "pipeProgram": "ssh",
-                "pipeArgs": [ "rompi@raspberrypi.local", "sudo" ],
+                "pipeArgs": [ "rompi@192.168.152.192", "sudo" ],
                 "debuggerPath": "/opt/vsdbg/vsdbg"
             }
         }
