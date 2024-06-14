@@ -11,6 +11,8 @@ fi
 sed -i '/#Storage=auto/c\Storage=none' "${ROOTFS_DIR}"/etc/systemd/journald.conf
 
 # Disable swap
+if [ "${DISABLE_SWAP}" = "1" ]; then
 on_chroot << EOF
 apt remove -y --purge dphys-swapfile
 EOF
+fi
