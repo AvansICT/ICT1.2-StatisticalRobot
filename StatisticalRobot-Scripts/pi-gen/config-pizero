@@ -6,7 +6,7 @@ DISABLE_BLUETOOTH=1
 DISABLE_SWAP=0
 DISABLE_USER_PASSWORD=1
 
-IMG_NAME=avansict-statisicalrobotos-net$DOTNET_VERSION-$ARCH-zero
+IMG_NAME=avansict-statisicalrobotos-net$DOTNET_VERSION-$ARCH-pizero
 PI_GEN_RELEASE="AvansICT/ICT1.2-StatisticalRobot OS Image (Pi Zero)"
 LOCALE_DEFAULT=en_US.UTF-8
 TIMEZONE_DEFAULT=Europe/Amsterdam
