@@ -1,9 +1,13 @@
+# Avans Config
+DOTNET_VERSION=8.0
+CSPROJECTS_RAM_DISK_SIZE=1024M # Max 50% of available RAM is recommended, turn off for pi zero by setting this value to "0"
+DISABLE_BLUETOOTH=1 # Disable bluetooth to save battery power
+DISABLE_SWAP=1 # Disable swap for preventing wear on sd-card
+DISABLE_USER_PASSWORD=1 # Disable userpassword for easy development
+
+# Raspberry Pi Config
 RELEASE=bookworm
 ARCH=arm64
-DOTNET_VERSION=8.0
-CSPROJECTS_RAM_DISK_SIZE=1024M
-DISABLE_BLUETOOTH=1
-
 IMG_NAME=avansict-statisicalrobotos-net$DOTNET_VERSION-$ARCH
 PI_GEN_RELEASE="AvansICT/ICT1.2-StatisticalRobot OS Image"
 LOCALE_DEFAULT=en_US.UTF-8

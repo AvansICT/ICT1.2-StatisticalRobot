@@ -3,13 +3,17 @@
 # Add directory for csprojects (none ram disk in dev version, stage 4 makes a ramdisk at this mount point)
 mkdir -p "${ROOTFS_DIR}/mnt/csprojects"
 
-# For easy SSH usage, password is disabled
-sed -i '/#PermitEmptyPasswords no/c\PermitEmptyPasswords yes' "${ROOTFS_DIR}"/etc/ssh/sshd_config
+if [ "${DISABLE_USER_PASSWORD}" = "1" ]; then
 
-# Disable password for user
-on_chroot << EOF
+    # For easy SSH usage, password is disabled
+    sed -i '/#PermitEmptyPasswords no/c\PermitEmptyPasswords yes' "${ROOTFS_DIR}"/etc/ssh/sshd_config
+
+    # Disable password for user
+    on_chroot << EOF
 passwd -d ${FIRST_USER_NAME}
 EOF
+
+fi
 
 # Disable automatic updates
 on_chroot << EOF
