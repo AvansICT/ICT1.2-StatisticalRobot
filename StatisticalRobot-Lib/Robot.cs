@@ -78,12 +78,14 @@ public static class Robot {
             .FirstOrDefault((ushort)0);
     }
 
-    public static ushort[] ReadAnalog()
-    {
-        return ReadUnpack(12,12,"HHHHHH")
-            .OfType<ushort>()
-            .ToArray();
-    }
+    // read analog port Romi
+    //
+    // public static ushort[] ReadAnalog()
+    // {
+    //     return ReadUnpack(12,12,"HHHHHH")
+    //         .OfType<ushort>()
+    //         .ToArray();
+    // }
 
     public static short[] ReadEncoders()
     {
@@ -95,19 +97,19 @@ public static class Robot {
     public static I2cDevice CreateI2cDevice(byte address) 
     {
         return Robot.i2cBus.CreateDevice(address);
-    }
+    } 
 
-    public static void SetPinMode(int pinNumber,PinMode state)
+    public static void SetDigitalPinMode(int pinNumber,PinMode state)
     {
         gpioController.OpenPin(pinNumber,state);
     }
 
-    public static void WritePin(int pinNumber, PinValue value)
+    public static void WriteDigitalPin(int pinNumber, PinValue value)
     {
         gpioController.Write(pinNumber,value);
     }
 
-    public static PinValue ReadPin(int pinNumber)
+    public static PinValue ReadDigitalPin(int pinNumber)
     {
         return gpioController.Read(pinNumber);
     }
@@ -119,8 +121,6 @@ public static class Robot {
             throw new ArgumentOutOfRangeException("Duty Cycle needs to be between 0.0 and 1.0");
         }
         pwm = PwmChannel.Create(0,0,frequency,dutyCyclePercentage);
-        pwmState = true;
-        pwm.Start();
     }
 
     public static void ChangePwmFrequency(int frequency)
@@ -133,25 +133,18 @@ public static class Robot {
         pwm.DutyCycle = dutyCycle;
     }
 
-    public static void StartStopPwm()
-    {
-        if(pwmState) pwm.Stop();
-        else pwm.Start();
-    }
+    public static void StartPwm() => pwm.Start();
+    public static void StopPwm() => pwm.Stop();
 
-    public static int AnalogRead(byte pin)
+    public static int AnalogRead(byte analogPin)
     {
-        byte[] b = [1, 3, pin, 0, 0];
         try
         {
-            grovePiAnalog.Write(b);
-            Thread.Sleep(1);
-            grovePiAnalog.ReadByte();
-            byte[] readBuffer = new byte[4];
-            romi32u4.Read(readBuffer); 
-            int v1 = (int)readBuffer[1];
-            int v2 = (int)readBuffer[2];
-            return (v1 * 256) + v2;
+            grovePiAnalog.WriteRegister((byte)(0x30 + analogPin));
+            byte[] readBuffer = new byte[2];
+            grovePiAnalog.ReadRegister((byte)(0x30+analogPin),readBuffer);
+            int value = readBuffer[1] << 8 | readBuffer[0];
+            return value;
         }
         catch (Exception ex)
         {
@@ -160,15 +153,4 @@ public static class Robot {
             return 0;
         }
     }
-
-    public static void SetAnalogType(string mode, byte pin)
-    {
-        byte[] b;
-        if(mode.ToLower() == "output") b = [5, pin, 1, 0];
-        if(mode.ToLower() == "input") b = [5, pin, 0, 0];
-        else throw new ArgumentException("Mode is not supported.");
-        grovePiAnalog.Write(b);
-        Thread.Sleep(1);
-    }
-
 }
