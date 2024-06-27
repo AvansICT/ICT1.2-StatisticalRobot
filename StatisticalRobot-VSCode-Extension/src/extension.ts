@@ -5,14 +5,13 @@ import { RobotListProvider } from './RobotListProvider';
 import path from 'path';
 import * as fs from 'fs';
 import { StatisticalRobotTaskProvider } from './StatisticalRobotTaskProvider';
+import { SshPool } from './lib/SshPool';
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Avans Statistical Robot Extension Active');
-
-	// TODO: Make changeRobotSettings functional
-	// changeRobotSettings opens a webview with robot settings (wifi + power)
-
 	let disposables: vscode.Disposable[] = [];
+
+	let sshPool = new SshPool();
+	disposables.push(sshPool);
 
 	let robotListProvider: RobotListProvider;
 
@@ -178,7 +177,7 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	}));
 
-	disposables.push(vscode.tasks.registerTaskProvider('statisticalrobot', new StatisticalRobotTaskProvider(discoveryService)));
+	disposables.push(vscode.tasks.registerTaskProvider('statisticalrobot', new StatisticalRobotTaskProvider(discoveryService, sshPool)));
 
 	context.subscriptions.push(...disposables);
 }

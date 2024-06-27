@@ -6,13 +6,16 @@ import { SshHelper } from './lib/SshHelper';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as tar from 'tar-stream';
+import { SshPool } from './lib/SshPool';
 
 export class StatisticalRobotTaskProvider implements vscode.TaskProvider<vscode.Task> {
 
     private discoveryService: RobotDiscovery;
+    private sshPool: SshPool;
 
-    constructor(discoveryService: RobotDiscovery) {
+    constructor(discoveryService: RobotDiscovery, sshPool: SshPool) {
         this.discoveryService = discoveryService;
+        this.sshPool = sshPool;
     }
 
     async provideTasks(token: vscode.CancellationToken): Promise<vscode.Task[]> {
@@ -30,7 +33,11 @@ export class StatisticalRobotTaskProvider implements vscode.TaskProvider<vscode.
             task.name ?? 'Build and Deploy to Robot', 
             'statisticalrobot',
             new vscode.CustomExecution(async (definition) => {
-                return new StatisticalRobotBuildTaskTerminal(definition as StatisticalRobotTaskDefinition, this.discoveryService);
+                return new StatisticalRobotBuildTaskTerminal(
+                    definition as StatisticalRobotTaskDefinition, 
+                    this.discoveryService, 
+                    this.sshPool
+                );
             })
         );
 
@@ -60,7 +67,11 @@ export class StatisticalRobotTaskProvider implements vscode.TaskProvider<vscode.
             `Build and Deploy ${projectName}`,
             'statisticalrobot',
             new vscode.CustomExecution(async (task) => {
-                return new StatisticalRobotBuildTaskTerminal(task as StatisticalRobotTaskDefinition,  this.discoveryService);
+                return new StatisticalRobotBuildTaskTerminal(
+                    task as StatisticalRobotTaskDefinition,  
+                    this.discoveryService, 
+                    this.sshPool
+                );
             })
         );
     }
@@ -81,10 +92,12 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
 
     private _task: StatisticalRobotTaskDefinition;
     private _discoveryService: RobotDiscovery;
+    private _sshPool: SshPool;
 
-    constructor(task: StatisticalRobotTaskDefinition, discoveryService: RobotDiscovery) {
+    constructor(task: StatisticalRobotTaskDefinition, discoveryService: RobotDiscovery, sshPool: SshPool) {
         this._task = task;
         this._discoveryService = discoveryService;
+        this._sshPool = sshPool;
     }
 
     open(initialDimensions: vscode.TerminalDimensions | undefined): void {
@@ -121,15 +134,9 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
             this.echo("");
 
             this.writeEmitter.fire(`Connecting to Robot @ ${robotHost}...`);
-            if(!await this.testRobotConnection(robotHost)) {
-                this.echo("Failed");
-                this.echo("Connection with Robot failed! Try rebooting your robot if this problem persists!");
-                return;
-            }
 
             try {
-                rompi = new SshHelper(robotHost);
-                await rompi.connect();
+                rompi = await this.getSshConnection(robotHost);
             }
             catch(err) {
                 this.echo("Failed");
@@ -178,7 +185,7 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
             this.echo("Build and Upload failed!");
         }
         finally {
-            rompi?.close();
+            // rompi?.close();
             this.closeEmitter.fire(resultCode);
         }
     }
@@ -316,22 +323,26 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
             return true;
         }
         catch (err) {
+            console.error(err);
             return false;
         }
     }
 
-    private async testRobotConnection(robotHost: string): Promise<boolean> {
-        try {
-            let response = await fetch(`http://${robotHost}:5000/test/ping`, {
-                method: 'GET',
-                signal: AbortSignal.timeout(500)
-            });
+    private async getSshConnection(robotHost: string): Promise<SshHelper> {
+        let result = this._sshPool.get(robotHost);
 
-            return response.ok && await response.text() === "pong!";
+        if(!result || !result.isConnected()) {
+            result = new SshHelper(robotHost);
+            await result.connect();
+
+            this._sshPool.set(robotHost, result);
         }
-        catch {
-            return false;
+        else {
+            // Will result in console as "Already Connected"
+            this.writeEmitter.fire("Already ");
         }
+
+        return result;
     }
 
     private echo(msg: string) {

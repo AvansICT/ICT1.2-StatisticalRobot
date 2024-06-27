@@ -7,6 +7,7 @@ export class SshHelper {
     private host: string;
     private _ssh: ssh.Client | undefined;
     private _sftp: ssh.SFTPWrapper | undefined;
+    private _isConnected: boolean = false;
 
     constructor(host: string) {
         this.host = host;
@@ -23,6 +24,10 @@ export class SshHelper {
     }
 
     connect(): Promise<void> {
+        if(this.isConnected()) {
+            return Promise.resolve();
+        }
+
         return this.promisify((res, rej) => {
             this._ssh = new ssh.Client();
 
@@ -37,13 +42,24 @@ export class SshHelper {
 
                     res(true);
                 });
+
+                this._isConnected = true;
             });
 
             this._ssh.once('error', (err) => {
                 this._ssh?.end();
                 this._ssh = undefined;
 
+                this._isConnected = false;
+
                 rej(err);
+            });
+
+            this._ssh.on("end", () => {
+                this._isConnected = false;
+
+                this._ssh = undefined;
+                this._sftp = undefined;
             });
 
             this._ssh.connect({
@@ -51,33 +67,20 @@ export class SshHelper {
                 port: 22,
                 username: 'rompi',
                 password: undefined,
-
+                timeout: 5000,
+                readyTimeout: 5000
             });
         });
+    }
+
+    isConnected(): boolean {
+        return this._ssh !== undefined && this._sftp !== undefined && this._isConnected;
     }
 
     close(): void {
         this._sftp?.end();
         this._ssh?.end();
     }
-
-    // exists(pathStr: string): Promise<boolean> {
-    //     this.checkConnected();
-
-    //     return this.promisify((res, rej) => {
-    //         let containingDir = path.dirname(pathStr);
-    //         let filename = path.basename(pathStr);
-
-    //         this._sftp!.readdir(containingDir, (err, list) => {
-    //             if(err) {
-    //                 rej(err);
-    //                 return;
-    //             }
-
-    //             res(list.some(fileStats => fileStats.filename === filename));
-    //         });
-    //     });
-    // }
 
     async mkdir(pathStr: string): Promise<boolean> {
         if(pathStr.includes('"')) {
@@ -88,19 +91,6 @@ export class SshHelper {
         return result.exitcode === 0;
     }
 
-    // async mkdirs(pathList: string[]): Promise<boolean> {
-    //     let dirsToCreate = pathList.map(p => {
-    //         if(p.includes('"')) {
-    //             throw new Error("Illegal path character!");
-    //         }
-            
-    //         return '"' + p + '"';
-    //     }).join(' ');
-
-    //     let result = await this.exec(`mkdir -p ${dirsToCreate}`);
-    //     return result.exitcode === 0;
-    // }
-
     async rmdir(pathStr: string): Promise<boolean> {
         if(pathStr.includes('"')) {
             throw new Error("Illegal path character!");
@@ -108,21 +98,6 @@ export class SshHelper {
 
         let result = await this.exec(`rm -rf "${pathStr}"`);
         return result.exitcode === 0;
-    }
-
-    upload(localPath: string, remotePath: string): Promise<boolean> {
-        this.checkConnected();
-
-        return this.promisify((res, rej) => {
-            this._sftp!.fastPut(localPath, remotePath, { mode: 0o775 }, (err) => {
-                if(err) {
-                    rej(err);
-                    return;
-                }
-
-                res(true);
-            });
-        });
     }
 
     exec(cmd: string): Promise<SshExecResult> {
@@ -176,7 +151,7 @@ export class SshHelper {
     }
 
     private checkConnected() {
-        if(!this._ssh || !this._sftp) {
+        if(!this.isConnected()) {
             throw new Error("ssh/sftp not connected. Please call connect function first");
         }
     }
