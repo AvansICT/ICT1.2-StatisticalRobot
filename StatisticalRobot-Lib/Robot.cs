@@ -3,6 +3,7 @@ using System.Device.I2c;
 using System.Device.Pwm;
 using System.Device.Spi;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Avans.StatisticalRobot;
 
@@ -12,9 +13,15 @@ public static class Robot {
     private static I2cDevice romi32u4 = i2cBus.CreateDevice(20);
     private static I2cDevice grovePiAnalog = i2cBus.CreateDevice(8);
     private static GpioController gpioController = new GpioController();
-    private static PwmChannel pwm;
+    private static PwmChannel? pwm;
     private static bool pwmState;
 
+    private static long stopwatchTicksPerUs = (long)(Stopwatch.Frequency * 0.000_001);
+
+    static Robot() 
+    {
+        Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+    }
 
     private static object[] ReadUnpack(int address, int size, string format)
     {
@@ -153,6 +160,19 @@ public static class Robot {
             Console.WriteLine("Error: " + ex.Message);
             return 0;
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    public static void WaitUs(int usec)
+    {
+        long durationTicks = Robot.stopwatchTicksPerUs * usec;
+
+        long startTicks = Stopwatch.GetTimestamp();
+        long nowTicks;
+        do
+        {
+            nowTicks = Stopwatch.GetTimestamp();
+        } while (nowTicks - startTicks < durationTicks);
     }
 
     public static void Wait(int millis)
