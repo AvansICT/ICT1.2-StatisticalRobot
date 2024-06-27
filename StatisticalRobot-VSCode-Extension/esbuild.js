@@ -1,3 +1,5 @@
+const { sourceMapsEnabled } = require('process');
+
 // import * as esbuild from 'esbuild';
 esbuild = require('esbuild');
 
@@ -38,17 +40,42 @@ const nativeNodeModulesPlugin = {
     },
 };
 
+/**
+ * @type {import('esbuild').Plugin}
+ */
+const esbuildProblemMatcherPlugin = {
+    name: 'esbuild-problem-matcher',
+  
+    setup(build) {
+      build.onStart(() => {
+        console.log('[esbuild] build started');
+      });
+      build.onEnd(result => {
+        result.errors.forEach(({ text, location }) => {
+          console.error(`✘ [ERROR] ${text}`);
+          console.error(`    ${location.file}:${location.line}:${location.column}:`);
+        });
+        console.log('[esbuild] build finished');
+      });
+    }
+  };
+
+const production = process.argv.includes('--production');
+
 (async () => {
     await esbuild.build({
         entryPoints: ["./src/extension.ts"],
         bundle: true,
         outfile: './dist/extension.js',
-        plugins: [nativeNodeModulesPlugin],
+        plugins: [nativeNodeModulesPlugin, esbuildProblemMatcherPlugin],
         external: [
             'vscode'
         ],
         format: 'cjs',
-        platform: 'node'
+        platform: 'node',
+        minify: production,
+        sourcemap: !production,
+        sourcesContent: false
     });
 })().catch(err => {
     console.error(err);
