@@ -1,7 +1,9 @@
 .vscode/**
 .vscode-test/**
 src/**
+# dist/**
 out/**
+esbuild.config.js
 node_modules/**
 .gitignore
 .yarnrc
@@ -11,3 +13,12 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+
+# WARNING: .node files (native binaries) will not be copied to the extension
+# This makes the extension cross platform.
+# The library that's supposed to load these native binaries (ssh2) checks if their available before use
+# All .node files used by ssh2 are OPTIONAL, so it should have no effect excluding them
+#
+# If for some reason ssh2 doesn't work anymore (upload fails or the extension won't load properly),
+# please comment the line below to re-include the .node files
+dist/*.node
