@@ -356,20 +356,23 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
     private async addFileToTar(tarStream: tar.Pack, filePath: string, relativePath: string): Promise<boolean> {
         let fileSize = (await fs.stat(filePath)).size;
 
-        return await new Promise((resolve, reject) => {
-            let writer = tarStream.entry({ name: relativePath, size: fileSize, mode: 0o775 }, (err) => {
-                if(err) { 
-                    reject(err);
-                    return;
-                }
+        let fileBuffer = await fs.readFile(filePath);
+        tarStream.entry({ name: relativePath, mode: 0o775 }, fileBuffer);
 
-                resolve(true);
-            });
+        return true;
 
-            // Force ASCII encoding, or else the writer won't understand the encoding
-            let reader = fsSync.createReadStream(filePath, { encoding: "ascii" });
-            reader.pipe(writer);
-        });
+        // return await new Promise(async (resolve, reject) => {
+            
+
+        //     let writer = tarStream.entry({ name: relativePath, size: fileSize, mode: 0o775 }, (err) => {
+        //         if(err) { 
+        //             reject(err);
+        //             return;
+        //         }
+
+        //         resolve(true);
+        //     });
+        // });
     }
 
 }
