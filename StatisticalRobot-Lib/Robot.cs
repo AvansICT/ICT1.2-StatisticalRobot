@@ -174,4 +174,9 @@ public static class Robot {
             nowTicks = Stopwatch.GetTimestamp();
         } while (nowTicks - startTicks < durationTicks);
     }
+
+    public static void Wait(int millis)
+    {
+        Thread.Sleep(millis);
+    }
 }

@@ -71,7 +71,7 @@ while(!(buttonA && buttonB))
 
     // if(buttonC) Robot.ChangePwmDutyCycle(0.5);
     // else        Robot.ChangePwmDutyCycle(0.0);
-    //Robot.ChangePwmDutyCycle(0.5-(Robot.AnalogRead(0)/2000));
+    Robot.ChangePwmDutyCycle(0.5-(Robot.AnalogRead(2)/2000));
 
     await Task.Delay(50);
 }
