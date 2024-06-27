@@ -2,6 +2,7 @@ using System.Device.Gpio;
 using System.Device.I2c;
 using System.Device.Pwm;
 using System.Device.Spi;
+using System.Diagnostics;
 
 namespace Avans.StatisticalRobot;
 
@@ -152,5 +153,10 @@ public static class Robot {
             Console.WriteLine("Error: " + ex.Message);
             return 0;
         }
+    }
+
+    public static void Wait(int millis)
+    {
+        Thread.Sleep(millis);
     }
 }
