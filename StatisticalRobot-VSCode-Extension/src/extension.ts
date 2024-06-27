@@ -4,6 +4,7 @@ import { RobotDiscovery, RobotInfo } from './lib/RobotDiscovery';
 import { RobotListProvider } from './RobotListProvider';
 import path from 'path';
 import * as fs from 'fs';
+import { StatisticalRobotTaskProvider } from './StatisticalRobotTaskProvider';
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Avans Statistical Robot Extension Active');
@@ -176,6 +177,8 @@ export function activate(context: vscode.ExtensionContext) {
 			simpleId: 'local'
 		});
 	}));
+
+	disposables.push(vscode.tasks.registerTaskProvider('statisticalrobot', new StatisticalRobotTaskProvider(discoveryService)));
 
 	context.subscriptions.push(...disposables);
 }

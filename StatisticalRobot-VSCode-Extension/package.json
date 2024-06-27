@@ -25,7 +25,10 @@
       "title": "Avans Statistical Robot",
       "properties": {
         "avans-statisticalrobot.connected-robot": {
-          "type": ["string", null],
+          "type": [
+            "string",
+            null
+          ],
           "default": null,
           "description": "The id of the statistical robot selected for publishing and debugging. This property will be autofilled by the statistical robot extension using automatic discovery"
         }
@@ -66,6 +69,34 @@
         "title": "Statistical Robot: Change Robot Settings over IP"
       }
     ],
+    "taskDefinitions": [
+      {
+        "type": "statisticalrobot",
+        "required": [
+          "projectName",
+          "robotIpAddress",
+          "robotOutputDir"
+        ],
+        "properties": {
+          "projectName": {
+            "type": "string",
+            "default": "RobotProject.csproj",
+            "description": "The C# project to build and deploy to the robot (relative path to the workspace directory)"
+          },
+          "robotIpAddress": {
+            "type": "string",
+            "default": "${command:avans-statisticalrobot.connectedRobotIpAddress}",
+            "description": "The robots ip-address"
+          },
+          "robotOutputDir": {
+            "type": "string",
+            "default": "/mnt/csprojects",
+            "description": "The output directory"
+          }
+        },
+        "when": "shellExecutionSupported"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -86,7 +117,7 @@
     "viewsWelcome": [
       {
         "view": "statisticalrobot-list",
-        "contents": "No robots have been found on your network.\n[Search for Robots](command:avans-statisticalrobot.discoverRobots)"
+        "contents": "No robots have been found on your network.\nIf the robot can't connect to your network, please connect to its wifi network (starting with 'Robot_') using password 'avansict42'\n[Search for Robots](command:avans-statisticalrobot.discoverRobots)"
       }
     ],
     "menus": {
@@ -140,7 +171,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "vscode-test",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "esbuild-base": "node ./esbuild.config.js",
     "esbuild": "npm run esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
     "test-compile": "tsc -p ./",
@@ -149,6 +180,8 @@
   "devDependencies": {
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
+    "@types/ssh2": "^1.15.0",
+    "@types/tar-stream": "^3.1.3",
     "@types/vscode": "^1.89.0",
     "@typescript-eslint/eslint-plugin": "^7.7.1",
     "@typescript-eslint/parser": "^7.7.1",
@@ -158,5 +191,9 @@
     "esbuild": "^0.21.4",
     "eslint": "^8.57.0",
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "ssh2": "^1.15.0",
+    "tar-stream": "^3.1.7"
   }
 }
