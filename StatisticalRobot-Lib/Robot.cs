@@ -1,9 +1,9 @@
 using System.Device.Gpio;
 using System.Device.I2c;
 using System.Device.Pwm;
-using System.Device.Spi;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Security.Principal;
 
 namespace Avans.StatisticalRobot;
 
@@ -17,11 +17,6 @@ public static class Robot {
     private static bool pwmState;
 
     private static long stopwatchTicksPerUs = (long)(Stopwatch.Frequency * 0.000_001);
-
-    static Robot() 
-    {
-        Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
-    }
 
     private static object[] ReadUnpack(int address, int size, string format)
     {
@@ -67,9 +62,9 @@ public static class Robot {
         WriteRaw(24, data);
     }
 
-    public static void Motors(short left, short right)
+    public static void Motors(short speedLeft, short speedRight)
     {
-        WritePack(6,left,right);
+        WritePack(6,speedLeft,speedRight);
     }
 
     public static bool[] ReadButtons()
@@ -160,6 +155,47 @@ public static class Robot {
             Console.WriteLine("Error: " + ex.Message);
             return 0;
         }
+    }
+
+    /// <summary>
+    /// Reads puls in
+    /// </summary>
+    /// <param name="pin">The pin to read from</param>
+    /// <param name="waitFor">Pin value to wait for</param>
+    /// <param name="timeoutUs">Timeout in microseconds</param>
+    /// <returns>-2 if pinstate invalid, -1 if timeout, 0 if timeout during pulse read</returns>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    public static int PulseIn(int pin, PinValue waitFor, int timeoutMillis)
+    {
+        if(gpioController.Read(pin) == waitFor) 
+        {
+            return -2;
+        }
+
+        Stopwatch timeoutTimer = Stopwatch.StartNew();
+
+        PinValue notWaitFor = !waitFor;
+        while(gpioController.Read(pin) == notWaitFor && timeoutTimer.ElapsedMilliseconds < timeoutMillis)
+        {
+            // Wait for pulse
+        }
+
+        if(timeoutTimer.ElapsedMilliseconds >= timeoutMillis) {
+            return -1;
+        }
+
+        Stopwatch pulseTimer = Stopwatch.StartNew();
+        while(gpioController.Read(pin) == PinValue.High && timeoutTimer.ElapsedMilliseconds < timeoutMillis) 
+        {
+            // Wait
+        }
+        pulseTimer.Stop();
+
+        if(timeoutTimer.ElapsedMilliseconds >= timeoutMillis) {
+            return 0;
+        }
+
+        return (int)Math.Round(pulseTimer.Elapsed.TotalMicroseconds);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
