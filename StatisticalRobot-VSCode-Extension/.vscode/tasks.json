@@ -6,7 +6,7 @@
 		{
 			"type": "npm",
 			"script": "package",
-			"problemMatcher": "$tsc",
+			"problemMatcher": "$esbuild",
 			"isBackground": false,
 			"presentation": {
 				"echo": true,
@@ -21,7 +21,7 @@
 		{
 			"type": "npm",
 			"script": "compile",
-			"problemMatcher": "$tsc",
+			"problemMatcher": "$esbuild",
 			"isBackground": false,
 			"presentation": {
 				"echo": true,
