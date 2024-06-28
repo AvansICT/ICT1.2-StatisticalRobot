@@ -50,7 +50,7 @@ export class StatisticalRobotTaskProvider implements vscode.TaskProvider<vscode.
                 return csProjFileList.map(pf => {
                     let relativePath = vscode.workspace.asRelativePath(pf, false);
 
-                    return this.createRobotTask(path.basename(vscode.workspace.workspaceFolders![0].uri.fsPath), {
+                    return this.createRobotTask(path.basename(relativePath) || path.basename(vscode.workspace.workspaceFolders![0].uri.fsPath), {
                         type: 'statisticalrobot',
                         projectFile: relativePath,
                         robotIpAddress: '${command:avans-statisticalrobot.connectedRobotIpAddress}',
@@ -165,7 +165,9 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
 
             let uploadTime = Date.now();
 
-            let inputDir = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, 'bin', 'Debug', 'robot');
+            let projectPath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, this._task.projectFile);
+
+            let inputDir = path.join(path.dirname(projectPath), 'bin', 'Debug', 'robot');
             if(!await this.uploadFilesToPi(rompi, inputDir, outputDir)) {
                 this.echo("Uploading program to robot failed! Please restart your robot if this problem persists.");
                 return;
@@ -225,15 +227,17 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
 
     private buildProject(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
+            let projectPath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, this._task.projectFile);
+
             // Run command: dotnet build RobotProject.csproj --runtime linux-arm64 --nologo --no-self-contained --output bin/Debug/robot
             let dotnet = spawn('dotnet', [
-                    'build', this._task.projectFile, 
+                    'build', projectPath, 
                     '--runtime', 'linux-arm64',
                     '--nologo',
                     '--no-self-contained',
                     '--output', 'bin/Debug/robot'
                 ], {
-                    cwd: vscode.workspace.workspaceFolders![0].uri.fsPath
+                    cwd: path.dirname(projectPath)
                 }
             );
 
