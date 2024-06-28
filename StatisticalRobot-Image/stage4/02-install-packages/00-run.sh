@@ -14,7 +14,7 @@ else
 fi
 
 # Build the latest version of the statisticalrobot-server
-dotnet publish "${STAGE_WORK_DIR}/ICT1.2-StatisticalRobot/StatisticalRobot-Server.csproj" --runtime linux-arm64 --no-self-contained --nologo --output "${ROOTFS_DIR}/opt/StatisticalRobot-Server"
+dotnet publish "${STAGE_WORK_DIR}/ICT1.2-StatisticalRobot/StatisticalRobot-Server/StatisticalRobot-Server.csproj" --runtime linux-arm64 --no-self-contained --nologo --output "${ROOTFS_DIR}/opt/StatisticalRobot-Server"
 
 # Install StatisticalRobot-Server as a systemd service. See the service file for more information
 install -m 644 files/statisticalrobot-server.service "${ROOTFS_DIR}/etc/systemd/system/statisticalrobot-server.service"
