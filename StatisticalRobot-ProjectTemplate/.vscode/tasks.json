@@ -2,37 +2,17 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "shell",
-			"label": "Build and Deploy",
-			"command": "Set-ExecutionPolicy",
-			"args": [
-				"Bypass",
-				"-Scope",
-				"Process;",
-				".\\.vscode\\build_deploy.ps1",
-				"${workspaceFolderBasename}",
-				"${command:avans-statisticalrobot.connectedRobotIpAddress}"
-			],
+			"type": "statisticalrobot",
+			"projectName": "${workspaceFolderBasename}",
+			"projectFile": "RobotProject.csproj",
+			"robotIpAddress": "${command:avans-statisticalrobot.connectedRobotIpAddress}",
+			"robotOutputDir": "/mnt/csprojects",
+			"problemMatcher": [],
+			"label": "statisticalrobot: Build and Deploy",
 			"group": {
 				"kind": "build",
 				"isDefault": true
-			},
-			"presentation": {
-				"echo": true,
-				"reveal": "always",
-				"focus": false,
-				"panel": "shared",
-				"showReuseMessage": true,
-				"clear": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"type": "dotnet",
-			"task": "build",
-			"group": "build",
-			"problemMatcher": [],
-			"label": "Build Only"
+			}
 		}
 	]
 }

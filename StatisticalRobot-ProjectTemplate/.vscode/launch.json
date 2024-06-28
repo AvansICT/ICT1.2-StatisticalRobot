@@ -14,11 +14,15 @@
             "justMyCode": false,
             "stopAtEntry": false,
             "console": "internalConsole",
-            "preLaunchTask": "Build and Deploy",
+            "preLaunchTask": "statisticalrobot: Build and Deploy",
             "pipeTransport": {
                 "pipeCwd": "${workspaceFolder}",
                 "pipeProgram": "ssh",
-                "pipeArgs": [ "rompi@${command:avans-statisticalrobot.connectedRobotIpAddress}" ],
+                "pipeArgs": [ 
+                    "-o", "StrictHostKeychecking=no",
+                    "-o", "UserKnownHostsFile=/dev/null",
+                    "rompi@${command:avans-statisticalrobot.connectedRobotIpAddress}"
+                ],
                 "debuggerPath": "/opt/vsdbg/vsdbg"
             }
         }
