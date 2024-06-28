@@ -25,6 +25,19 @@
 				"--no-self-contained"
 			],
 			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "Update StatisticalRobot-ProjectTemplate Library",
+			"dependsOn": [
+				"StatisticalRobot-Lib: Publish as DLL"
+			],
+			"command": "cp",
+			"type": "shell",
+			"args": [
+				"StatisticalRobot-Lib/bin/Release/net8.0/linux-arm64/publish/StatisticalRobot-Lib.dll",
+				"../StatisticalRobot-ProjectTemplate/StatisticalRobot-Lib.dll"
+			],
+			"problemMatcher": []
 		}
 	]
 }
