@@ -1,20 +1,29 @@
 using System.Device.Gpio;
+using Avans.StatisticalRobot;
 
-// warning: Console.Read or Console.ReadKey won't work when remote debugging
+// warning: Console.Read or Console.ReadKey won't work when debugging
 // Use Console.ReadLine instead.
 
 Console.WriteLine("Hello World!");
 
-// Blinking LED
-var gpio = new GpioController();
-gpio.OpenPin(17, PinMode.Output);
-gpio.Write(17, PinValue.Low);
+Robot.SetDigitalPinMode(17, PinMode.Output);
+Robot.WriteDigitalPin(17, PinValue.Low /* or false or 0 */);
 
 bool ledIsOn = false;
 while(true) 
 {
-    gpio.Write(17, ledIsOn ? PinValue.Low : PinValue.High);
+    Robot.WriteDigitalPin(17, !ledIsOn);
     ledIsOn = !ledIsOn;
 
-    await Task.Delay(1000); // Or Thread.Sleep(1000);
+    Console.Write("The LED is ");
+    if(ledIsOn) 
+    {
+        Console.WriteLine("On!");
+    }
+    else
+    {
+        Console.WriteLine("Off!");
+    }
+
+    Robot.Wait(1000);
 }
