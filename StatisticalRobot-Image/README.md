@@ -16,7 +16,7 @@ Raspberry Pi OS 64 bit images are based primarily on Debian.
 
 For updating the base raspbian image, clone the arm64 branch from RPi-Distro/pi-gen to a seperate directory:
 `git clone --branch arm64 https://github.com/RPi-Distro/pi-gen.git`.
-Copy all files EXCEPT the folders/files `stage4`, `stage5` (These folders contain the configuration for the desktop environment), `export-noobs` and `README`.
+Copy all files EXCEPT the folders/files `stage4`, `stage5` (These folders contain the configuration for the desktop environment), `export-noobs`, `README` and `Dockerfile`.
 Please read the README of the pi-gen repository to see if anything has changed with the raspbian image.
 Also, for faster build times, disable the Raspbian-Lite image by removing the file `EXPORT_IMAGE` from the `stage2` folder.
 
@@ -29,6 +29,8 @@ export DISABLE_BLUETOOTH=${DISABLE_BLUETOOTH:0}
 export DISABLE_SWAP=${DISABLE_SWAP:0}
 export DISABLE_USER_PASSWORD=${DISABLE_USER_PASSWORD:1}
 ```
+
+The Dockerfile has been modified to include dotnet. See the build image instructions for more details.
 
 ## Configuring the image
 
@@ -239,6 +241,8 @@ the WSL distribution must be debian based.
 After installing these dependencies and when running the build-docker.sh
 script for the first time, the script might ask for sudo/root privileges.
 
+**Warning** The Dockerfile used for the docker build should automatically determain the SAME version of dotnet as configured in the config file for pi-gen. If for some reason the wrong version of dotnet gets installed in the docker container (Symptom: StatisticalRobot-Server will not run in the created image), modify the DOTNET_VERSION `Arg` option in the Dockerfile to be the same dotnet version as the dotnet version to be installed on the pi.
+
 On Windows: Make sure a WSL-distribution is installed (Ubuntu is recommended, but any debian system should work) and Docker Desktop is running.
 
 When using VSCode, run the `Build image using docker (Recommended)`. This will execute the `./build-docker.sh` file in the integrated-console. Wait for the image to finish building. The build script might ask for sudo permission at the start of the build. When using windows, the script will be run in the default Windows-Subsystem-for-Linux terminal (Ubuntu is recommended, but any debian system should work).
@@ -260,7 +264,7 @@ dosfstools libarchive-tools libcap2-bin grep rsync xz-utils file git curl bc \
 gpg pigz xxd arch-test
 ```
 
-Dotnet is also required. You have to install this manually using 
+Dotnet is also required (the same version as the one you're installing on the pi!). You have to install this manually using microsoft dotnet-install script `https://dot.net/v1/dotnet-install.sh`
 
 When using Windows, install these packages in your default Windows-Subsystem-for-Linux terminal (Ubuntu is recommended, but any debian system should work).
 
