@@ -73,12 +73,17 @@
       {
         "type": "statisticalrobot",
         "required": [
-          "projectName",
+          "projectFile",
           "robotIpAddress",
           "robotOutputDir"
         ],
         "properties": {
           "projectName": {
+            "type": "string",
+            "default": "${workspaceFolderBasename}",
+            "description": "The name of the project. The workspace name as default. Changing the project name requires you to update your launch.json!"
+          },
+          "projectFile": {
             "type": "string",
             "default": "RobotProject.csproj",
             "description": "The C# project to build and deploy to the robot (relative path to the workspace directory)"

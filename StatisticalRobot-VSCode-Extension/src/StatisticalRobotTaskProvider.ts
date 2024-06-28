@@ -23,7 +23,7 @@ export class StatisticalRobotTaskProvider implements vscode.TaskProvider<vscode.
     }
 
     resolveTask(task: vscode.Task, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Task> {
-        if(task.definition.projectName === "") {
+        if(task.definition.projectFile === "") {
             return undefined;
         }
 
@@ -50,11 +50,12 @@ export class StatisticalRobotTaskProvider implements vscode.TaskProvider<vscode.
                 return csProjFileList.map(pf => {
                     let relativePath = vscode.workspace.asRelativePath(pf, false);
 
-                    return this.createRobotTask(path.basename(relativePath), {
+                    return this.createRobotTask(path.basename(vscode.workspace.workspaceFolders![0].uri.fsPath), {
                         type: 'statisticalrobot',
-                        projectName: relativePath,
+                        projectFile: relativePath,
                         robotIpAddress: '${command:avans-statisticalrobot.connectedRobotIpAddress}',
-                        robotOutputDir: '/mnt/csprojects'
+                        robotOutputDir: '/mnt/csprojects',
+                        projectName: '${workspaceFolderBasename}'
                     });
                 });
             });
@@ -78,7 +79,8 @@ export class StatisticalRobotTaskProvider implements vscode.TaskProvider<vscode.
 }
 
 interface StatisticalRobotTaskDefinition extends vscode.TaskDefinition {
-    projectName: string;
+    projectName?: string;
+    projectFile: string;
     robotIpAddress: string;
     robotOutputDir: string;
 }
@@ -149,10 +151,12 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
             this.echo("");
             this.echo("Preparing for upload...");
 
-            let projectName = path.basename(this._task.projectName, path.extname(this._task.projectName));
+            let projectName = this._task.projectName || path.basename(this._task.projectFile, path.extname(this._task.projectFile));
             let outputDir = `${this._task.robotOutputDir}/${projectName}`;
 
-            if(!await this.preparePi(rompi, projectName, outputDir)) {
+            let projectFileName = path.basename(this._task.projectFile, path.extname(this._task.projectFile));
+
+            if(!await this.preparePi(rompi, projectFileName, outputDir)) {
                 this.echo("Failed preparing for upload! Please restart your robot if this problem persists.");
                 return;
             }
@@ -223,7 +227,7 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
         return new Promise<boolean>((resolve, reject) => {
             // Run command: dotnet build RobotProject.csproj --runtime linux-arm64 --nologo --no-self-contained --output bin/Debug/robot
             let dotnet = spawn('dotnet', [
-                    'build', this._task.projectName, 
+                    'build', this._task.projectFile, 
                     '--runtime', 'linux-arm64',
                     '--nologo',
                     '--no-self-contained',
@@ -249,10 +253,10 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
         });
     }
 
-    private async preparePi(rompi: SshHelper, projectName: string, outputDir: string) {
+    private async preparePi(rompi: SshHelper, projectFileName: string, outputDir: string) {
 
         let killResult = await rompi.exec(
-            `for pid in $(ps -ef | grep "${projectName}.dll" | grep -v "grep" | awk '{print $2}'); do `
+            `for pid in $(ps -ef | grep "${projectFileName}.dll" | grep -v "grep" | awk '{print $2}'); do `
                 // Kill the running instance
                 + 'sudo kill -9 $pid > /dev/null 2> /dev/null || :; '
             + 'done;');
