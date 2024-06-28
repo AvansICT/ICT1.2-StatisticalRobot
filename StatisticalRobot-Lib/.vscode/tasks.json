@@ -6,7 +6,7 @@
 			"projectName": "${workspaceFolderBasename}",
 			"projectFile": "StatisticalRobot-LibTest/RobotProject.csproj",
 			"robotIpAddress": "${command:avans-statisticalrobot.connectedRobotIpAddress}",
-			"robotOutputDir": "/mnt/csprojects",
+			"robotOutputDir": "/media/csprojects",
 			"problemMatcher": [],
 			"label": "statisticalrobot: Build and Deploy",
 			"group": {

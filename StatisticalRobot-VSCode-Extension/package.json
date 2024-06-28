@@ -95,7 +95,7 @@
           },
           "robotOutputDir": {
             "type": "string",
-            "default": "/mnt/csprojects",
+            "default": "/media/csprojects",
             "description": "The output directory"
           }
         },

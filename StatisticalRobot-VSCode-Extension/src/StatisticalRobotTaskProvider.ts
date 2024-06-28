@@ -54,7 +54,7 @@ export class StatisticalRobotTaskProvider implements vscode.TaskProvider<vscode.
                         type: 'statisticalrobot',
                         projectFile: relativePath,
                         robotIpAddress: '${command:avans-statisticalrobot.connectedRobotIpAddress}',
-                        robotOutputDir: '/mnt/csprojects',
+                        robotOutputDir: '/media/csprojects',
                         projectName: '${workspaceFolderBasename}'
                     });
                 });

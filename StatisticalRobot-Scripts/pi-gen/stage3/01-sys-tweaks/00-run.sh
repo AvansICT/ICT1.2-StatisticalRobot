@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 # Add directory for csprojects (none ram disk in dev version, stage 4 makes a ramdisk at this mount point)
-mkdir -p "${ROOTFS_DIR}/mnt/csprojects"
+mkdir -p "${ROOTFS_DIR}/media/csprojects"
 
 if [ "${DISABLE_USER_PASSWORD}" = "1" ]; then
 
