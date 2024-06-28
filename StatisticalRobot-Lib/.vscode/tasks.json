@@ -2,37 +2,29 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "dotnet",
-			"task": "build",
-			"group": "build",
+			"type": "statisticalrobot",
+			"projectName": "${workspaceFolderBasename}",
+			"projectFile": "StatisticalRobot-LibTest/RobotProject.csproj",
+			"robotIpAddress": "${command:avans-statisticalrobot.connectedRobotIpAddress}",
+			"robotOutputDir": "/mnt/csprojects",
 			"problemMatcher": [],
-			"label": "Build Only"
-		},
-		{
-			"type": "shell",
-			"label": "Build and Upload",
-			"command": "Set-ExecutionPolicy",
-			"args": [
-				"Bypass",
-				"-Scope",
-				"Process;",
-				".\\.vscode\\build_deploy.ps1",
-				"${workspaceFolderBasename}",
-				"${command:avans-statisticalrobot.connectedRobotIpAddress}"
-			],
+			"label": "statisticalrobot: Build and Deploy",
 			"group": {
 				"kind": "build",
 				"isDefault": true
-			},
-			"presentation": {
-				"echo": true,
-				"reveal": "always",
-				"focus": false,
-				"panel": "shared",
-				"showReuseMessage": true,
-				"clear": false
-			},
-			"problemMatcher": []
+			}
+		},
+		{
+			"label": "StatisticalRobot-Lib: Publish as DLL",
+			"command": "dotnet",
+			"type": "process",
+			"args": [
+				"publish", "./StatisticalRobot-Lib/StatisticalRobot-Lib.csproj",
+				"--runtime", "linux-arm64",
+				"--nologo",
+				"--no-self-contained"
+			],
+			"problemMatcher": "$msCompile"
 		}
 	]
 }

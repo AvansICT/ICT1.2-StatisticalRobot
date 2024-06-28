@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug on Pi",
+            "name": "Debug On Robot",
             "type":"coreclr",
             "request": "launch",
             "program": "/opt/dotnet/dotnet",
@@ -14,11 +14,15 @@
             "justMyCode": false,
             "stopAtEntry": false,
             "console": "internalConsole",
-            "preLaunchTask": "Build and Upload",
+            "preLaunchTask": "${defaultBuildTask}",
             "pipeTransport": {
                 "pipeCwd": "${workspaceFolder}",
                 "pipeProgram": "ssh",
-                "pipeArgs": [ "rompi@${command:avans-statisticalrobot.connectedRobotIpAddress}" ],
+                "pipeArgs": [
+                    "-o", "StrictHostKeychecking=no",
+                    "-o", "UserKnownHostsFile=/dev/null",
+                    "rompi@${command:avans-statisticalrobot.connectedRobotIpAddress}"
+                ],
                 "debuggerPath": "/opt/vsdbg/vsdbg"
             }
         }
