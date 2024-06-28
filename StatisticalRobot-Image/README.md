@@ -1,4 +1,4 @@
-# pi-gen
+# pi-gen (Avans Statistical Robot)
 
 Tool used to create Raspberry Pi OS images, and custom images based on Raspberry Pi OS,
 which was in turn derived from the Raspbian project.
@@ -8,49 +8,40 @@ Raspberry Pi OS 64 bit images are based primarily on Debian.
 
 **AVANS**: This copy of pi-gen is based on RPi-Distro/pi-gen from github, using branch arm64
 
-## Dependencies
+>PLEASE READ THE WHOLE README BEFORE MAKING ANY MODIFICATIONS TO THE AVANS STATISTICALROBOT IMAGE CONFIGURATION
 
-pi-gen runs on Debian-based operating systems released after 2017, and we
-always advise you use the latest OS for security reasons.
+>**IMPORTANT** When modifying files, make sure you use Unix line-feeds (\n). If Windows line-feeds are used (\r\n), the image build WILL fail with the message 'Invalid option' or the generated image contains invalid files. When using visual studio code to modify the build files, the settings in the `.vscode` folder should already enforce this rule.
 
-On other Linux distributions it may be possible to use the Docker build described
-below.
+## Updating Raspbian
 
-To install the required dependencies for `pi-gen` you should run:
+For updating the base raspbian image, clone the arm64 branch from RPi-Distro/pi-gen to a seperate directory:
+`git clone --branch arm64 https://github.com/RPi-Distro/pi-gen.git`.
+Copy all files EXCEPT the folders/files `stage4`, `stage5` (These folders contain the configuration for the desktop environment), `export-noobs` and `README`.
+Please read the README of the pi-gen repository to see if anything has changed with the raspbian image.
+Also, for faster build times, disable the Raspbian-Lite image by removing the file `EXPORT_IMAGE` from the `stage2` folder.
 
-```bash
-apt-get install coreutils quilt parted qemu-user-static debootstrap zerofree zip \
-dosfstools libarchive-tools libcap2-bin grep rsync xz-utils file git curl bc \
-gpg pigz xxd arch-test
-```
-
-The file `depends` contains a list of tools needed.  The format of this
-package is `<tool>[:<debian-package>]`.
-
-## Getting started with building your images
-
-Getting started is as simple as cloning this repository on your build machine. You
-can do so with:
+After updating the `build.sh` file, please add the following exports to the list of exported variables in the `build.sh` file:
 
 ```bash
-git clone https://github.com/RPI-Distro/pi-gen.git
+export CSPROJECTS_RAM_DISK_SIZE=${CSPROJECTS_RAM_DISK_SIZE:-512M}
+export DOTNET_VERSION
+export DISABLE_BLUETOOTH=${DISABLE_BLUETOOTH:0}
+export DISABLE_SWAP=${DISABLE_SWAP:0}
+export DISABLE_USER_PASSWORD=${DISABLE_USER_PASSWORD:1}
 ```
 
-`--depth 1` can be added afer `git clone` to create a shallow clone, only containing
-the latest revision of the repository. Do not do this on your development machine.
-
-Also, be careful to clone the repository to a base path **NOT** containing spaces.
-This configuration is not supported by debootstrap and will lead to `pi-gen` not
-running.
-
-After cloning the repository, you can move to the next step and start configuring
-your build.
-
-## Config
+## Configuring the image
 
 Upon execution, `build.sh` will source the file `config` in the current
-working directory.  This bash shell fragment is intended to set needed
+working directory. This bash shell fragment is intended to set needed
 environment variables.
+
+Building the image for the raspberry pi zero-series is possible. Because the raspberry pi zero has limited resources, a seperate configuration file is used. You can specify this configuration file by using (for normal and docker build respectively):
+
+```bash
+./build.sh -c config-pizero
+./build-docker.sh -c config-pizero
+```
 
 The following environment variables are supported:
 
@@ -187,7 +178,7 @@ The following environment variables are supported:
   * `PUBKEY_SSH_FIRST_USER` (Default: unset)
 
    Setting this to a value will make that value the contents of the FIRST_USER_NAME's ~/.ssh/authorized_keys.  Obviously the value should
-   therefore be a valid authorized_keys file.  Note that this does not
+   therefore be a valid authorized_keys file. Note that this does not
    automatically enable SSH.
 
   * `PUBKEY_ONLY_SSH` (Default: `0`)
@@ -207,19 +198,77 @@ The following environment variables are supported:
 
     If set, then instead of working through the numeric stages in order, this list will be followed. For example setting to `"stage0 stage1 mystage stage2"` will run the contents of `mystage` before stage2. Note that quotes are needed around the list. An absolute or relative path can be given for stages outside the pi-gen directory.
 
-A simple example for building Raspberry Pi OS:
+**The following environment variables are added by Avans:**
+
+ * `DOTNET_VERSION` (Default: unset, Required)
+
+    The dotnet version to install in the image. Example values: `7.0`, `8.0`, `9.0`.
+
+ * `CSPROJECTS_RAM_DISK_SIZE` (Default: 512M)
+
+    To relieve the SD-Card, a ram disk is created to store all C# project from the students. Is is recommended to leave 50% of the memory free for other programs. The OS uses approximately 150MB RAM whilst running multiple C# applications. A minimal size of 256M is recommended, but student projects shouldn't be larger than a couple of megabytes. **The `M` suffix is required to specify Megabytes**. By setting this value to `0` (with the M suffix), disables the ram disk and will store al C# projects on the sd-card.
+
+ * `DISABLE_BLUETOOTH` (Default: 0)
+
+    Disables bluetooth if this value is set to `1`. It is recommended to turn off bluetooth for the statistical-robot when not needed, because it will lower the raspberry pi's power consumption (= longer battery life).
+
+ * `DISABLE_SWAP` (Default: 0)
+
+    Disables the swap file (storing RAM-pages on the sd-card) when set to `1` to reduce the wear on the sd-card.
+
+ * `DISABLE_USER_PASSWORD` (Default: 1)
+
+    Disables the users password (for local login and ssh) when set to `1`. At the time of writing, the user password **MUST** be disabled for the StatisticalRobot-VSCode-Extension to function correctly. It is recommended to re-enable the user password when the VSCode extension fully supports password (Uploading already supports passwords, debugging using the launch.json file doesn't).
+
+## Building the Image
+
+If this folder is opened in VSCode, the pre-configured build tasks can be used to build the image. In VSCode press `Ctrl+Shift+P` and type: `Tasks: Run Task` and choose one of the options described below.
+
+**Warning:** The build-scripts automate the image-creation, but this doesn't mean it's fast. Expect the script to run for about 20 minutes on a high-end machine with a 1Gbps internet connection before the image creation is done.
+
+**Ignore** warnings about `Possible missing firmware /lib/firmware/rtl_nic/rtl8156b-2.fw for built-in driver r8152`, these won't break anything and the build continu's as normally.
+
+### Build using Docker (Recommended)
+
+**Important**: Make sure qemu-user-static and binfmt-support packages are installed
+on the system where the ./build-docker.sh is run.
+Use: `sudo apt update && sudo apt install qemu-user-static binfmt-support`
+These dependecies NEED to be available or the docker image won't run!
+In Windows/WSL: Install these packages inside the default wsl container,
+the WSL distribution must be debian based.
+After installing these dependencies and when running the build-docker.sh
+script for the first time, the script might ask for sudo/root privileges.
+
+On Windows: Make sure a WSL-distribution is installed (Ubuntu is recommended, but any debian system should work) and Docker Desktop is running.
+
+When using VSCode, run the `Build image using docker (Recommended)`. This will execute the `./build-docker.sh` file in the integrated-console. Wait for the image to finish building. The build script might ask for sudo permission at the start of the build. When using windows, the script will be run in the default Windows-Subsystem-for-Linux terminal (Ubuntu is recommended, but any debian system should work).
+
+The generated images can be found in the `./deploy` directory in this folder.
+
+The pi-gen tools creates a very large docker image. After all images are created and you're not planning to generate more images, it is recommended to remove the left over images by running the commands `docker container rm pigen_work` (if it exists), `docker image rm pi-gen`, `docker image prune` and `docker builder prune`. This will free a couple of gigabytes on your disk.
+
+### Build using Linux
+
+pi-gen runs on Debian-based operating systems released after 2017, and we
+always advise you use the latest OS for security reasons.
+
+To install the required dependencies for `pi-gen` you should run:
 
 ```bash
-IMG_NAME='raspios'
+apt install coreutils quilt parted qemu-user-static debootstrap zerofree zip \
+dosfstools libarchive-tools libcap2-bin grep rsync xz-utils file git curl bc \
+gpg pigz xxd arch-test
 ```
 
-The config file can also be specified on the command line as an argument the `build.sh` or `build-docker.sh` scripts.
+Dotnet is also required. You have to install this manually using 
 
-```
-./build.sh -c myconfig
-```
+When using Windows, install these packages in your default Windows-Subsystem-for-Linux terminal (Ubuntu is recommended, but any debian system should work).
 
-This is parsed after `config` so can be used to override values set there.
+After installing these dependencies, run the `./build.sh` script (or run the `Build Image` task in vscode). This will execute the `./build.sh` file in the integrated-console. Wait for the image to finish building.
+
+The generated images can be found in the `./deploy` directory in this folder.
+
+When modifying the images between builds, it is recommended to run the `./build.sh` script with the `CLEAN` environment set to `1` or to remove the `./work` directory. This makes sure you're always working with a clean image. Also, any stages before the stage you've modified can be skipped by adding an empty `SKIP` file in the root of the stage folder, which speeds up the re-build process.
 
 ## How the build process works
 
@@ -264,64 +313,6 @@ The following process is followed to build images:
   * Generate the images for any stages that have specified them
 
 It is recommended to examine build.sh for finer details.
-
-
-## Docker Build
-
-Docker can be used to perform the build inside a container. This partially isolates
-the build from the host system, and allows using the script on non-debian based
-systems (e.g. Fedora Linux). The isolation is not complete due to the need to use
-some kernel level services for arm emulation (binfmt) and loop devices (losetup).
-
-To build:
-
-```bash
-vi config         # Edit your config file. See above.
-./build-docker.sh
-```
-
-**Important**: Make sure qemu-user-static and binfmt-support packages are installed
-on the system where the ./build-docker.sh is run.
-Use: `sudo apt update && sudo apt install qemu-user-static binfmt-support`
-These dependecies NEED to be available or the docker image won't run!
-In Windows/WSL: Install these packages inside the default wsl container,
-the WSL distribution must be debian based.
-After installing these dependencies and when running the build-docker.sh
-script for the first time, the script might ask for sudo/root privileges.
-
-If everything goes well, your finished image will be in the `deploy/` folder.
-You can then remove the build container with `docker rm -v pigen_work`
-
-If you encounter errors during the build, you can edit the corresponding scripts, and
-continue:
-
-```bash
-CONTINUE=1 ./build-docker.sh
-```
-
-To examine the container after a failure you can enter a shell within it using:
-
-```bash
-sudo docker run -it --privileged --volumes-from=pigen_work pi-gen /bin/bash
-```
-
-After successful build, the build container is by default removed. This may be undesired when making incremental changes to a customized build. To prevent the build script from remove the container add
-
-```bash
-PRESERVE_CONTAINER=1 ./build-docker.sh
-```
-
-There is a possibility that even when running from a docker container, the
-installation of `qemu-user-static` will silently fail when building the image
-because `binfmt-support` _must be enabled on the underlying kernel_. An easy
-fix is to ensure `binfmt-support` is installed on the host machine before
-starting the `./build-docker.sh` script (or using your own docker build
-solution).
-
-### Passing arguments to Docker
-
-When the docker image is run various required command line arguments are provided.  For example the system mounts the `/dev` directory to the `/dev` directory within the docker container.  If other arguments are required they may be specified in the PIGEN_DOCKER_OPTS environment variable.  For example setting `PIGEN_DOCKER_OPTS="--add-host foo:192.168.0.23"` will add '192.168.0.23   foo' to the `/etc/hosts` file in the container.  The `--name`
-and `--privileged` options are already set by the script and should not be redefined.
 
 ## Stage Anatomy
 
@@ -371,6 +362,54 @@ will produce the normal raspberrypi os lite image.
    The following settings will be applied: disable writing systemlogs (journal),
    csprojects ram disk, disable swap.
    The StatisticalRobot-Server will be installed and configured to start on boot.
+
+## Docker Build
+
+Docker can be used to perform the build inside a container. This partially isolates
+the build from the host system, and allows using the script on non-debian based
+systems (e.g. Fedora Linux). The isolation is not complete due to the need to use
+some kernel level services for arm emulation (binfmt) and loop devices (losetup).
+
+To build:
+
+```bash
+nano config         # Edit your config file. See above.
+./build-docker.sh
+```
+
+If everything goes well, your finished image will be in the `deploy/` folder.
+You can then remove the build container with `docker rm -v pigen_work`
+
+If you encounter errors during the build, you can edit the corresponding scripts, and
+continue:
+
+```bash
+CONTINUE=1 ./build-docker.sh
+```
+
+To examine the container after a failure you can enter a shell within it using:
+
+```bash
+sudo docker run -it --privileged --volumes-from=pigen_work pi-gen /bin/bash
+```
+
+After successful build, the build container is by default removed. This may be undesired when making incremental changes to a customized build. To prevent the build script from remove the container add
+
+```bash
+PRESERVE_CONTAINER=1 ./build-docker.sh
+```
+
+There is a possibility that even when running from a docker container, the
+installation of `qemu-user-static` will silently fail when building the image
+because `binfmt-support` _must be enabled on the underlying kernel_. An easy
+fix is to ensure `binfmt-support` is installed on the host machine before
+starting the `./build-docker.sh` script (or using your own docker build
+solution).
+
+### Passing arguments to Docker
+
+When the docker image is run various required command line arguments are provided.  For example the system mounts the `/dev` directory to the `/dev` directory within the docker container.  If other arguments are required they may be specified in the PIGEN_DOCKER_OPTS environment variable.  For example setting `PIGEN_DOCKER_OPTS="--add-host foo:192.168.0.23"` will add '192.168.0.23   foo' to the `/etc/hosts` file in the container.  The `--name`
+and `--privileged` options are already set by the script and should not be redefined.
 
 ## Skipping stages to speed up development
 

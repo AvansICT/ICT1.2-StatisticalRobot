@@ -9,13 +9,18 @@
 # This script lacks the setup for the StatisticalRobot-Server (Remote build and deploying or on-device deploying should be setup manually by the developer)
 # This script also lacks the ram disk, for easy saving older/build versions between reboots
 
+# IMPORTANT!!!!
+# If you modify this file using windows, MAKE SURE that you save it in linux format
+# This means, use '\n' (line-feat, LF) as new-line and not windows: '\r\n' (Criage-Return+Line-feat, CRLF)!!!
+# THIS IS VERY IMPORTANT, or else this file won't execute in the image
+
 # Enable script exit on error, when an error occures, this script will end immediately
 set -e
 
 # Select dotnet version. Please only use format "{MAJOR}.0"
 # The installer will resolve the best version for that .NET-version automatically
 DOTNET_VERSION=8.0
-export DOTNET_ROOT=/opt/dotnet_$DOTNET_VERSION
+export DOTNET_ROOT=/opt/dotnet
 
 # Select vsdbg version
 VSDBG_VERSION="latest"
@@ -50,7 +55,7 @@ sudo chmod -R 755 /opt/vsdbg
 
 # Setup Environment Vars
 echo "[Setup] Setting up environment"
-export DOTNET_ROOT=/opt/dotnet_$DOTNET_VERSION
+export DOTNET_ROOT=/opt/dotnet
 export PATH=$PATH:$DOTNET_ROOT
 
 echo "export PATH=\$PATH:$DOTNET_ROOT" >> ~/.bashrc
@@ -82,9 +87,9 @@ echo "dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4" | sudo tee -a /boot/fir
 
 # Setup memory disk for C# projects
 echo "[Setup] Folder for C# projects"
-sudo mkdir /mnt/csprojects
-sudo chmod -R 755 /mnt/csprojects
-sudo chown -R rompi:rompi /mnt/csprojects
+sudo mkdir /media/csprojects
+sudo chmod -R 755 /media/csprojects
+sudo chown -R rompi:rompi /media/csprojects
 
 # Setup finished
 echo ""

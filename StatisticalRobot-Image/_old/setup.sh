@@ -1,12 +1,17 @@
 #!/bin/bash
 
+# IMPORTANT!!!!
+# If you modify this file using windows, MAKE SURE that you save it in linux format
+# This means, use '\n' (line-feat, LF) as new-line and not windows: '\r\n' (Criage-Return+Line-feat, CRLF)!!!
+# THIS IS VERY IMPORTANT, or else this file won't execute in the image
+
 # Enable script exit on error, when an error occures, this script will end immediately
 set -e
 
 # Select dotnet version. Please only use format "{MAJOR}.0"
 # The installer will resolve the best version for that .NET-version automatically
 DOTNET_VERSION=8.0
-export DOTNET_ROOT=/opt/dotnet_$DOTNET_VERSION
+export DOTNET_ROOT=/opt/dotnet
 
 # Select vsdbg version
 VSDBG_VERSION="latest"
@@ -41,7 +46,7 @@ sudo chmod -R 755 /opt/vsdbg
 
 # Setup Environment Vars
 echo "[Setup] Setting up environment"
-export DOTNET_ROOT=/opt/dotnet_$DOTNET_VERSION
+export DOTNET_ROOT=/opt/dotnet
 export PATH=$PATH:$DOTNET_ROOT
 
 echo "export PATH=\$PATH:$DOTNET_ROOT" >> ~/.bashrc
@@ -78,16 +83,16 @@ echo "dtoverlay=disable-bt" | sudo tee -a /boot/firmware/config.txt > /dev/null
 
 # Setup memory disk for C# projects
 echo "[Setup] Creating ram-disk for C# projects"
-sudo mkdir /mnt/csprojects
+sudo mkdir /media/csprojects
 
 # Add a 2gb large tmpfs filesystem (ram-based filesystem) in folder /mnt/csprojects for user rompi with read/write permissions
-echo "tmpfs /mnt/csprojects tmpfs size=2048M,mode=755,gid=1000,uid=1000,exec 0 0" | sudo tee -a /etc/fstab > /dev/null
+echo "tmpfs /media/csprojects tmpfs size=2048M,mode=755,gid=1000,uid=1000,exec 0 0" | sudo tee -a /etc/fstab > /dev/null
 
 # Load the created filesystem and update permissions
 sudo mount -a
 sudo systemctl daemon-reload
-sudo chown -R 1000:1000 /mnt/csprojects
-sudo chmod -R 755 /mnt/csprojects
+sudo chown -R 1000:1000 /media/csprojects
+sudo chmod -R 755 /media/csprojects
 
 # Setup StatisticalRobot-Server
 

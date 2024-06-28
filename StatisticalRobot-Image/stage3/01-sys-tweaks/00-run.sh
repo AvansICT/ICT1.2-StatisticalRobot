@@ -1,5 +1,10 @@
 #!/bin/bash -e
 
+# IMPORTANT!!!!
+# If you modify this file using windows, MAKE SURE that you save it in linux format
+# This means, use '\n' (line-feat, LF) as new-line and not windows: '\r\n' (Criage-Return+Line-feat, CRLF)!!!
+# THIS IS VERY IMPORTANT, or else this file won't execute in the image
+
 # Add directory for csprojects (none ram disk in dev version, stage 4 makes a ramdisk at this mount point)
 mkdir -p "${ROOTFS_DIR}/media/csprojects"
 
@@ -34,7 +39,7 @@ if [ "${DISABLE_BLUETOOTH}" = "1" ]; then
     echo "dtoverlay=disable-bt" >> "${ROOTFS_DIR}/boot/firmware/config.txt"
 fi
 
-# Enable GPIO peripherals on first boot
+# Enable GPIO peripherals on first boot by registering a script that runs on boot and deletes its self
 install -m 755 files/statisticalrobot-init "${ROOTFS_DIR}/etc/init.d/"
 on_chroot << EOF
 systemctl enable statisticalrobot-init
