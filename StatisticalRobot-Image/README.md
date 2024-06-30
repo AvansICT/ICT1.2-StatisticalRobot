@@ -20,14 +20,14 @@ Copy all files EXCEPT the folders/files `stage4`, `stage5` (These folders contai
 Please read the README of the pi-gen repository to see if anything has changed with the raspbian image.
 Also, for faster build times, disable the Raspbian-Lite image by removing the file `EXPORT_IMAGE` from the `stage2` folder.
 
-After updating the `build.sh` file, please add the following exports to the list of exported variables in the `build.sh` file:
+After updating the `build.sh` file, please add the following exports to the list of exported variables in the `build.sh` file (**The negative sign after the `:` indicates that the following string is the default value**):
 
 ```bash
-export CSPROJECTS_RAM_DISK_SIZE=${CSPROJECTS_RAM_DISK_SIZE:-512M}
+export CSPROJECTS_RAM_DISK_SIZE="${CSPROJECTS_RAM_DISK_SIZE:-512M}"
 export DOTNET_VERSION
-export DISABLE_BLUETOOTH=${DISABLE_BLUETOOTH:0}
-export DISABLE_SWAP=${DISABLE_SWAP:0}
-export DISABLE_USER_PASSWORD=${DISABLE_USER_PASSWORD:1}
+export DISABLE_BLUETOOTH="${DISABLE_BLUETOOTH:-0}"
+export DISABLE_SWAP="${DISABLE_SWAP:-0}"
+export DISABLE_USER_PASSWORD="${DISABLE_USER_PASSWORD:-1}"
 ```
 
 The Dockerfile has been modified to include dotnet. See the build image instructions for more details.
