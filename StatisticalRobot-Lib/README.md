@@ -31,3 +31,11 @@ To deploy a new version of the library, run the VSCode task `Update StatisticalR
 - Run `dotnet publish StatisticalRobot-Lib.csproj --runtime linux-arm64 --no-self-contained`
 - Copy the file `bin/Release/{DOTNET_VERSION}/linux-arm64/publish/StatisticalRobot-Lib.dll` to the `StatisticalRobot-ProjectTemplate` folder, replacing the old DLL.
 - Distribute the new version of the `StatisticalRobot-ProjectTemplate`
+
+## Weird robot behavior
+
+It is smart to check the robot's voltage level. At about `5600` millivolts, it starts throwing exceptions that do not occur when the voltage is high enough. 
+
+However, when the voltage drops below `5500` millivolts, it affects the Raspberry Pi as well, potentially causing it to get stuck in a boot loop due to insufficient voltage. This issue is indicated by the Romi startup sound playing repeatedly.
+
+With six `2600mAh` batteries, the robot is capable of 7 hours of idle time with occasional testing. The exact duration of continuous running has not been tested yet.
