@@ -14,7 +14,7 @@
             "justMyCode": false,
             "stopAtEntry": false,
             "console": "internalConsole",
-            "preLaunchTask": "${defaultBuildTask}",
+            "preLaunchTask": "statisticalrobot: Build and Deploy",
             "pipeTransport": {
                 "pipeCwd": "${workspaceFolder}",
                 "pipeProgram": "ssh",
