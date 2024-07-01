@@ -7,6 +7,11 @@ using CliWrap.Buffered;
 internal class NetworkManager
 {
     
+    /// <summary>
+    /// Checks if the raspberry pi is connected to a wifi network
+    /// </summary>
+    /// <param name="forceRefresh">When true, forces the raspberry pi to rescan for available networks.</param>
+    /// <returns>True if the raspberry pi is connected</returns>
     public static async Task<bool> IsConnectedToWifiNetwork(bool forceRefresh = false)
     {
         bool result = false;
@@ -40,6 +45,10 @@ internal class NetworkManager
         return result;
     }
 
+    /// <summary>
+    /// Gets all available wifi networks in range of the raspberry pi
+    /// </summary>
+    /// <returns>A list of all available wifi networks</returns>
     public static async Task<List<AvailableWifiNetwork>> GetAvailableWifiNetworksAsync() 
     {
         List<AvailableWifiNetwork> result = new();
@@ -55,6 +64,13 @@ internal class NetworkManager
             .ToList();
     }
 
+    /// <summary>
+    /// Adds a new Wifi connection and connects to it
+    /// </summary>
+    /// <param name="ssid">The ssid of the wifi network to connect</param>
+    /// <param name="password">The password for the wifi network. Null for open/passwordless network</param>
+    /// <returns>Null if connection was successfull, string with error code if connection failed</returns>
+    /// <exception cref="NotImplementedException">If the returned error code is unknown</exception>
     public static async Task<string?> AddWifiConnection(string ssid, string? password) 
     {
         string? result = null;
@@ -161,6 +177,10 @@ internal class NetworkManager
         return result;
     }
 
+    /// <summary>
+    /// Gets a list of all saved wifi networks
+    /// </summary>
+    /// <returns>List of saved wifi networks</returns>
     public static async Task<List<SavedWifiNetwork>> GetSavedWifiNetworksAsync()
     {
         List<SavedWifiNetworkBuilder> result = new();
@@ -206,6 +226,11 @@ internal class NetworkManager
             .ToList();
     }
 
+    /// <summary>
+    /// Changes the active wifi network and connects to the wifi network with the specified uuid
+    /// </summary>
+    /// <param name="networkUuid">The uuid of the saved wifi network to connect to</param>
+    /// <returns>True on success</returns>
     public static async Task<bool> ChangeActiveNetwork(Guid networkUuid) 
     {
         var nmResult = await Cli.Wrap("nmcli")
@@ -221,6 +246,10 @@ internal class NetworkManager
         return nmResult.IsSuccess;
     }
 
+    /// <summary>
+    /// Activates the backup hotspot with SSID 'Robot_{SERIAL}' and password 'avansict42'
+    /// </summary>
+    /// <returns></returns>
     public static async Task ActivateBackupHotspot()
     {
         // PiId is the serial number, excluding the leading single '1' and all 0's
@@ -276,6 +305,11 @@ internal class NetworkManager
         }
     }
 
+    /// <summary>
+    /// Removes the specified saved wifi network
+    /// </summary>
+    /// <param name="networkUuid">The UUID of the wifi network to remove</param>
+    /// <returns>True on success</returns>
     public static async Task<bool> RemoveWifiNetwork(Guid networkUuid)
     {
         var nmResult = await Cli.Wrap("nmcli")
@@ -291,6 +325,11 @@ internal class NetworkManager
         return nmResult.IsSuccess;
     }
 
+    /// <summary>
+    /// Parses the output line of nmcli as AvailableWifiNetwork
+    /// </summary>
+    /// <param name="line">Output line of the nmcli tool</param>
+    /// <returns>AvailableWifiNetwork</returns>
     private static AvailableWifiNetwork ParseAvailableNetworkLine(string line)
     {
         // line Format: {ssid:string}:{in-use:' '|'*'}:{signal:int}:{security:string[], space seperated}
@@ -325,6 +364,12 @@ internal class NetworkManager
         return new AvailableWifiNetwork(ssid, inUse, signal, security);
     }
 
+    /// <summary>
+    /// Parses the output line of nmcli as SavedWifiNetworkBuilder
+    /// </summary>
+    /// <param name="line">Output line of the nmcli tool</param>
+    /// <param name="includeHotspot">True to also parse the hotspot line</param>
+    /// <returns>SavedWifiNetworkBuilder or null if the line is for the backup hotspot and includeHotspot = false</returns>
     private static SavedWifiNetworkBuilder? ParseSavedNetworkLine(string line, bool includeHotspot = false)
     {
         // line Format: {type:string}:{name:string}:{uuid:Guid}:{active:yes|no}:{autoconnect:yes|no}
@@ -364,6 +409,13 @@ internal class NetworkManager
         return result;
     }
 
+    /// <summary>
+    /// Gets the next colon (':') index in the specified string
+    /// </summary>
+    /// <param name="str">The string to search</param>
+    /// <param name="startIndex">The offset from the start in the string</param>
+    /// <returns>Next ':' index</returns>
+    /// <exception cref="FormatException"></exception>
     private static int GetNextColonIndex(string str, int startIndex = 0) 
     {
         int colonIdx = str.IndexOf(':', startIndex);
@@ -380,6 +432,9 @@ internal class NetworkManager
 
 }
 
+/// <summary>
+/// Class representing wifi network in range of the raspberry pi.
+/// </summary>
 internal class AvailableWifiNetwork
 {
     public string SSID {get; init;}
@@ -417,6 +472,9 @@ internal class AvailableWifiNetwork
     }
 }
 
+/// <summary>
+/// Class representing a saved WiFi configuration on the pi
+/// </summary>
 internal class SavedWifiNetwork
 {
     public string SSID {get; init;}
@@ -433,6 +491,9 @@ internal class SavedWifiNetwork
     }
 }
 
+/// <summary>
+/// A builder class to build the fields of the SavedWifiNetwork.
+/// </summary>
 internal class SavedWifiNetworkBuilder
 {
     public string? SSID {get; set;}

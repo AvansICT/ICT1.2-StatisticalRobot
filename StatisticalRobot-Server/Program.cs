@@ -10,6 +10,7 @@ var app = builder.Build();
 // Known fire and forget, shouldn't matter too much if this fails
 var hotspotTask = Task.Run(() => RunBackupHotspotCheck(app.Logger));
 
+// Set up Cross-Origin-Requests to allow anyone to access the api
 app.UseCors(builder => 
     builder
         .AllowAnyOrigin()
@@ -94,6 +95,10 @@ app.MapPost("/power/reboot", async () =>
 
 app.Run();
 
+/// <summary>
+/// Checks if the pi is connected to any wifi network and hosts a backup hotspot after some amount of time.
+/// </summary>
+/// <returns></returns>
 static async void RunBackupHotspotCheck(ILogger logger)
 {
     try

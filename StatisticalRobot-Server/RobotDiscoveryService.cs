@@ -20,25 +20,31 @@ public class RobotDiscoveryService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancelToken)
     {
-        UdpClient client = new UdpClient(new IPEndPoint(IPAddress.Any, 9999));
-        client.EnableBroadcast = true;
+        // Create a UDP Listener on all ports with broadcasts enabled
+        UdpClient client = new UdpClient(new IPEndPoint(IPAddress.Any, 9999))
+        {
+            EnableBroadcast = true
+        };
 
         logger.LogInformation("Listening for discovery packets...");
 
         while(!cancelToken.IsCancellationRequested) 
         {
+            // Receive a UDP datagram, cancel if requested
             var udpResult = await client.ReceiveAsync(cancelToken);
             if(cancelToken.IsCancellationRequested)
                 break;
 
             try 
             {
+                // Process the request
                 string request = Encoding.ASCII.GetString(udpResult.Buffer);
 
                 if(request == "STATROBOT_V0.0_DISCOV")
                 {
                     this.logger.LogInformation($"Discovery from {udpResult.RemoteEndPoint}");
 
+                    // Respond to the discovery request by using the senders remote endpoint (ip) information
                     byte[] response = Encoding.ASCII.GetBytes($"STATROBOT_V0.0_ACK_{await Utility.GetPiSerialNumber()}");
                     await client.SendAsync(response, udpResult.RemoteEndPoint, cancelToken);
                 }

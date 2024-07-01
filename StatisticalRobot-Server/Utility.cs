@@ -2,6 +2,11 @@
 public static class Utility
 {
     private static string? _piSerial = null;
+
+    /// <summary>
+    /// Gets the pi's serial number
+    /// </summary>
+    /// <returns>The serial number or '10000000deadbeef' if retrieving failed</returns>
     public static async Task<string> GetPiSerialNumber()
     {
         if(Utility._piSerial is not null)
@@ -24,7 +29,7 @@ public static class Utility
             break;
         }
 
-        Utility._piSerial = !string.IsNullOrEmpty(result) ? result : "deadbeef00000000";
+        Utility._piSerial = !string.IsNullOrEmpty(result) ? result : "10000000deadbeef";
         return Utility._piSerial;
     }
 }
