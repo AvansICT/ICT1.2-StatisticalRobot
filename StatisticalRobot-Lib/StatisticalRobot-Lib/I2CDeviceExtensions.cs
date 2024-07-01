@@ -18,6 +18,12 @@ public static class I2CDeviceExtensions
         device.Write(writeBuffer);
         Thread.Sleep(1);
     }
+    public static void WriteByteRegister(this I2cDevice device, byte register, byte data) 
+    {
+        byte[] writeBuffer = [register, data];  
+        device.Write(writeBuffer);
+        Thread.Sleep(1);
+    }
     public static void ReadRegister(this I2cDevice device, byte register, Span<byte> readBuffer) 
     {
         // Trigger the register for reading

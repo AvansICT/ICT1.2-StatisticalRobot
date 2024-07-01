@@ -1,41 +1,3 @@
-// using System.Device.I2c;
-
-// using var bus = I2cBus.Create(1);
-// using var analog = bus.CreateDevice(0x08);
-
-// byte[] receiveBuffer = new byte[2];
-// int value = 0;
-// while(true) 
-// {
-//     analog.Write([0x30])
-//     analog.WriteRead([0x30], receiveBuffer);
-
-//     value = receiveBuffer[1] << 8 | receiveBuffer[0];
-//     Console.WriteLine($"Value: {value}");
-
-//     await Task.Delay(1000);
-// }
-
-
-// var sw = Stopwatch.StartNew();
-// while(true) 
-// {
-//     Thread.Sleep(1000);
-
-//     Robot.SetDigitalPinMode(16, PinMode.Output);
-//     Robot.WriteDigitalPin(16, PinValue.Low);
-//     Robot.Wait(1);
-//     Robot.WriteDigitalPin(16, PinValue.High);
-//     Robot.WaitUs(10);
-//     Robot.WriteDigitalPin(16, PinValue.Low);
-
-//     Robot.SetDigitalPinMode(16, PinMode.Input);
-//     int pulse = Robot.PulseIn(16, PinValue.High, 50);
-
-//     Console.WriteLine($"Pulse: {pulse}us, distance = {pulse / 29 / 2}cm");
-// }
-
-
 using System.Device.Gpio;
 using Avans.StatisticalRobot;
 
@@ -63,6 +25,10 @@ Robot.Wait(2000);
 
 while(!(buttonA && buttonB)) 
 {
+    int[] humTempData = ReadDht11Data(18);
+
+    Console.WriteLine($"Humidity={humTempData[0]}.{humTempData[1]}%/nTemperature={humTempData[2]}.{humTempData[3]}C");
+
     leftDistance = GetUltrasoneDistance(5);
     rightDistance = GetUltrasoneDistance(16);
 
@@ -74,14 +40,14 @@ while(!(buttonA && buttonB))
     {
         Robot.Motors(60,100);
     }
-    else if(leftDistance <= 15 || rightDistance <= 15)
+    else if(leftDistance <= 20 && rightDistance <= 20)
     {
         for(short i = 100; i > 0; i -= 5) {
             Robot.Motors(i, i);
-            await Task.Delay(10);
+            Robot.Wait(10);
         }
         Robot.Motors(-100,100);
-        Robot.Wait(1000);
+        Robot.Wait(900);
         Robot.Motors(0,0);
     }
     else
@@ -121,9 +87,7 @@ while(!(buttonA && buttonB))
 
     //Console.WriteLine($"Sensor left distance ={GetUltrasoneDistance(5)} | Sensor right distance ={GetUltrasoneDistance(16)}");
 
-
-
-    await Task.Delay(500);
+    await Task.Delay(1500);
 }
 
 Robot.Motors(0,0);
@@ -147,4 +111,59 @@ static int GetUltrasoneDistance(int pin)
     Robot.SetDigitalPinMode(pin, PinMode.Input);
     int pulse = Robot.PulseIn(pin, PinValue.High, 50);
     return pulse/29/2;
+}
+
+static int[] ReadDht11Data(int DHTPIN)
+{
+    int[] dht11_dat = new int[5];
+    PinValue lastState = PinValue.High;
+    byte counter;
+    byte j = 0, i;
+
+    Array.Clear(dht11_dat, 0, dht11_dat.Length);
+
+    Robot.SetDigitalPinMode(DHTPIN, PinMode.Output);
+    Robot.WriteDigitalPin(DHTPIN, PinValue.Low);
+    Robot.Wait(18);
+    Robot.WriteDigitalPin(DHTPIN, PinValue.High);
+    Robot.WaitUs(40);
+    Robot.SetDigitalPinMode(DHTPIN, PinMode.Input);
+
+    for (i = 0; i < 85; i++)
+    {
+        counter = 0;
+        while (Robot.ReadDigitalPin(DHTPIN) == lastState)
+        {
+            counter++;
+            Thread.Sleep(TimeSpan.FromTicks(1));
+            if (counter == 255)
+            {
+                break;
+            }
+        }
+        lastState = Robot.ReadDigitalPin(DHTPIN);
+
+        if (counter == 255)
+            break;
+
+        if ((i >= 4) && (i % 2 == 0))
+        {
+            dht11_dat[j / 8] <<= 1;
+            if (counter > 16)
+                dht11_dat[j / 8] |= 1;
+            j++;
+        }
+    }
+
+    if ((j >= 40) &&
+        (dht11_dat[4] == ((dht11_dat[0] + dht11_dat[1] + dht11_dat[2] + dht11_dat[3]) & 0xFF)))
+    {
+        //fahrenheit = dht11_dat[2] * 9f / 5f + 32;
+        return dht11_dat;
+    }
+    else
+    {
+        Array.Clear(dht11_dat, 0, dht11_dat.Length);
+        return dht11_dat;
+    }
 }
