@@ -35,5 +35,13 @@ public static class I2CDeviceExtensions
         // Actually read the register
         device.Read(readBuffer);
     }
+    public static byte ReadByteRegister(this I2cDevice device, byte register) 
+    {
+        // Trigger the register for reading
+        device.WriteRegister(register);
+
+        // Actually read the register
+        return device.ReadByte();
+    }
 
 }
