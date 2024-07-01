@@ -361,6 +361,7 @@ will produce the normal raspberrypi os lite image.
    Also enables pwm on pin 12/13.
    This stage installs dotnet and the vsdbg remote debugger.
    Also the StatisticalRobot-Server will be installed and configured to start on boot.
+   The latest version of StatisticalRobot-Server is automatically cloned from the github repository.
 
  - **Stage 4 (Avans)** - Creates the student image for the statistical robot.
    The following settings will be applied: disable writing systemlogs (journal),
@@ -432,7 +433,6 @@ follows:
    export your image to test
 
 # Troubleshooting
-
 
 ## `binfmt_misc`
 

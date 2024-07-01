@@ -11,7 +11,7 @@ VSCode Extension for the Avans Statistical Robot.
 
 ## Requirements
 
-- SSH with SCP installed
+- SSH installed
 - .NET SDK 8.0 installed
 - C# Devkit Extension
 

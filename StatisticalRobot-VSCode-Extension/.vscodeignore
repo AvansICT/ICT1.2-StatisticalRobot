@@ -1,9 +1,7 @@
 .vscode/**
 .vscode-test/**
 src/**
-# dist/**
 out/**
-esbuild.config.js
 node_modules/**
 .gitignore
 .yarnrc
@@ -13,6 +11,10 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+
+esbuild.js
+webviews/design.html
+readme_content/**
 
 # WARNING: .node files (native binaries) will not be copied to the extension
 # This makes the extension cross platform.

@@ -7,7 +7,9 @@ import * as fs from 'fs';
 import { StatisticalRobotTaskProvider } from './StatisticalRobotTaskProvider';
 import { SshPool } from './lib/SshPool';
 
+// Entry point of the extension
 export function activate(context: vscode.ExtensionContext) {
+	// Create a list of disposables to register them all at once at the end
 	let disposables: vscode.Disposable[] = [];
 
 	let sshPool = new SshPool();
@@ -16,6 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
 	let robotListProvider: RobotListProvider;
 
 	const discoveryService = new RobotDiscovery(() => {
+		// refreshes the robot list every time a new robot has been discovered
 		robotListProvider.refresh();
 	});
 	disposables.push(discoveryService);
@@ -164,9 +167,6 @@ export function activate(context: vscode.ExtensionContext) {
 				retainContextWhenHidden: true
 			}
 		);
-
-		// TODO: fix this
-		// settingsView.iconPath = vscode.Uri.joinPath(vscode.Uri.parse(__dirname), '../resources/robot-icon.svg');
 
 		settingsView.webview.html = fs.readFileSync(path.join(__dirname, '..', 'webviews', 'robotsettings.html')).toString();
 

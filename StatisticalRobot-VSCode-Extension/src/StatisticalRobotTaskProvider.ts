@@ -259,6 +259,7 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
 
     private async preparePi(rompi: SshHelper, projectFileName: string, outputDir: string) {
 
+        // Kill all running instances of the project before uploading
         let killResult = await rompi.exec(
             `for pid in $(ps -ef | grep "${projectFileName}.dll" | grep -v "grep" | awk '{print $2}'); do `
                 // Kill the running instance
@@ -288,6 +289,8 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
             // Set highWaterMark to 256Mb (tar can be max 256Mb in RAM)
             let tarStream = tar.pack({ highWaterMark: 1_024_000 * 256 });
 
+            // Adding all files to a tar file in RAM, which makes uploading faster
+            // (Uploading a single file is quicker than uploading multiple files)
             for (const file of filesToUpload) {
                 // file.path is deprecated, but the replacing file.parentPath is empty in vscode
                 // That's why we're still using file.path as backup
@@ -303,11 +306,18 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
             }
 
             if(tarStream.destroyed) {
+                // An error occured whilst adding files to tar
                 return false;
             }
 
+            // Finish the tar file to upload it
             tarStream.finalize();
 
+            // Using a trick to speed up the upload process:
+            // We're executing the tar-command on the pi to extract the tar to the output directory
+            // But instead of uploading the file, we instruct tar to read the file from stdin (the console input)
+            // Than, using the created ssh-stream, we can upload the tar file into stdin of tar
+            // This way, we upload the files and immediately extract it simultaneously
             await new Promise((res, rej) => {
                 rompi.ssh.exec(`tar -xf - -C "${outputDir}"`, (err, stream) => {
                     if(err) {
@@ -364,23 +374,14 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
     private async addFileToTar(tarStream: tar.Pack, filePath: string, relativePath: string): Promise<boolean> {
         let fileSize = (await fs.stat(filePath)).size;
 
+        // Warning: We have to use a file buffer and the fs.readFile() funtion.
+        // using fsSync.openReadStream() and than using the pipe-function into the tarStream DOESN'T work
+        // Using pipe messes up the binary formatting, causing tarStream to interpret the file as UTF-8 text.
+        // This breaks any binary file (like the compiled C# code)
         let fileBuffer = await fs.readFile(filePath);
         tarStream.entry({ name: relativePath, mode: 0o775 }, fileBuffer);
 
         return true;
-
-        // return await new Promise(async (resolve, reject) => {
-            
-
-        //     let writer = tarStream.entry({ name: relativePath, size: fileSize, mode: 0o775 }, (err) => {
-        //         if(err) { 
-        //             reject(err);
-        //             return;
-        //         }
-
-        //         resolve(true);
-        //     });
-        // });
     }
 
 }
