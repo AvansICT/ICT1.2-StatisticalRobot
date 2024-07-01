@@ -240,15 +240,13 @@ class StatisticalRobotBuildTaskTerminal implements vscode.Pseudoterminal {
                     cwd: path.dirname(projectPath)
                 }
             );
-
-            const trimPath = vscode.workspace.workspaceFolders![0].uri.fsPath + path.delimiter;
         
             dotnet.stdout.on('data', (data) => {
-                this.writeEmitter.fire(data.toString().replaceAll(trimPath, ''));
+                this.writeEmitter.fire(data.toString());
             });
 
             dotnet.stderr.on('data', (data) => {
-                this.writeEmitter.fire(data.toString().replaceAll(trimPath, ''));
+                this.writeEmitter.fire(data.toString());
             });
 
             dotnet.on('close', (code) => {
