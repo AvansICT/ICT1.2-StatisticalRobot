@@ -171,6 +171,7 @@
   },
   "scripts": {
     "compile": "npm run check-types && node esbuild.js",
+    "compile-debug": "tsc -p ./",
     "check-types": "tsc --noEmit",
     "vscode:prepublish": "npm run check-types && node esbuild.js --production",
     "package": "npx vsce package --allow-missing-repository"
