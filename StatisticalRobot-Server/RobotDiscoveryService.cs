@@ -39,10 +39,6 @@ public class RobotDiscoveryService : BackgroundService
                 {
                     this.logger.LogInformation($"Discovery from {udpResult.RemoteEndPoint}");
 
-                    // int port = int.Parse(request.Substring(request.LastIndexOf('_') + 1));
-
-                    // this.logger.LogInformation($"Sending response to {udpResult.RemoteEndPoint.Address}:{port}");
-
                     byte[] response = Encoding.ASCII.GetBytes($"STATROBOT_V0.0_ACK_{await Utility.GetPiSerialNumber()}");
                     await client.SendAsync(response, udpResult.RemoteEndPoint, cancelToken);
                 }
