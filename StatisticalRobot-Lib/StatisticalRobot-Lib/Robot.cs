@@ -14,10 +14,15 @@ public static class Robot {
     private static I2cDevice grovePiAnalog = i2cBus.CreateDevice(8);
     private static GpioController gpioController = new GpioController();
     private static PwmChannel? pwm;
-    private static bool pwmState;
-
     private static long stopwatchTicksPerUs = (long)(Stopwatch.Frequency * 0.000_001);
 
+    /// <summary>
+    /// Reads data from Romi based on struct format
+    /// </summary>
+    /// <param name="address">Register adress</param>
+    /// <param name="size">Size of data</param>
+    /// <param name="format">struct format based on Python</param>
+    /// <returns>A formatted list of objects</returns>
     private static object[] ReadUnpack(int address, int size, string format)
     {
         romi32u4.WriteByte((byte)address);
@@ -30,6 +35,11 @@ public static class Robot {
         return StructConverter.Unpack(format, readBuffer);
     }
 
+    /// <summary>
+    /// Writes data to Romi with the correct format based on the type of data
+    /// </summary>
+    /// <param name="address">Register adress</param>
+    /// <param name="data">Data list</param>
     private static void WritePack(int address, params object[] data)
     {
         byte[] writeBuffer = StructConverter.Pack(data)
@@ -38,7 +48,12 @@ public static class Robot {
         romi32u4.Write(writeBuffer);
         Thread.Sleep(1); 
     }
-
+    
+    /// <summary>
+    /// Writes byte to specefic adress
+    /// </summary>
+    /// <param name="address">Register adress</param>
+    /// <param name="data">Byte list</param>
     private static void WriteRaw(int address, byte[] data) 
     {
         byte[] writeBuffer = data.Prepend((byte)address)
@@ -48,11 +63,21 @@ public static class Robot {
         Thread.Sleep(1);
     }
 
+    /// <summary>
+    /// Writes the brightness for each individual led on the Romi
+    /// </summary>
+    /// <param name="red">Value between 0-255</param>
+    /// <param name="yellow">Value between 0-255</param>
+    /// <param name="green">Value between 0-255</param>
     public static void LEDs(byte red, byte yellow, byte green)
     {
         WritePack(0,"BBB",red,yellow,green);
     }
 
+    /// <summary>
+    /// Plays notes on the buzzer located on the romi
+    /// </summary>
+    /// <param name="notes">Parses the input string to determine note duration, octave, and whether the note is dotted. It handles octave (o), length (l), and octave shift (> and <) commands.</param>
     public static void PlayNotes(string notes)
     {
         byte[] data = new byte[16];
@@ -62,11 +87,20 @@ public static class Robot {
         WriteRaw(24, data);
     }
 
+    /// <summary>
+    /// Sets speed per motor <= 400
+    /// </summary>
+    /// <param name="speedLeft">Speed left motor</param>
+    /// <param name="speedRight">Speed right motor</param>
     public static void Motors(short speedLeft, short speedRight)
     {
         WritePack(6,speedLeft,speedRight);
     }
 
+    /// <summary>
+    /// Reads buttons on the Romi
+    /// </summary>
+    /// <returns>List with bools if button is pressed or not</returns>
     public static bool[] ReadButtons()
     {
         return ReadUnpack(3,3,"???")
@@ -74,6 +108,10 @@ public static class Robot {
             .ToArray();
     }
 
+    /// <summary>
+    /// Reads current millivolts of the batterys
+    /// </summary>
+    /// <returns>The value in millivolts</returns>
     public static ushort ReadBatteryMillivolts()
     {
         return ReadUnpack(10,2,"H")
@@ -81,6 +119,7 @@ public static class Robot {
             .FirstOrDefault((ushort)0);
     }
 
+    // based on the design of the romi on 1-7-2024 this is not needed
     // read analog port Romi
     //
     // public static ushort[] ReadAnalog()
@@ -90,6 +129,10 @@ public static class Robot {
     //         .ToArray();
     // }
 
+    /// <summary>
+    /// Reads the encoders on the weels
+    /// </summary>
+    /// <returns>The position of the weels</returns>
     public static short[] ReadEncoders()
     {
         return ReadUnpack(39,4,"hh")
@@ -117,6 +160,12 @@ public static class Robot {
         return gpioController.Read(pinNumber);
     }
 
+    /// <summary>
+    /// Setup for the pwm
+    /// </summary>
+    /// <param name="frequency"></param>
+    /// <param name="dutyCyclePercentage"></param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public static void SetPwmPin(int frequency, double dutyCyclePercentage )
     {
         if(dutyCyclePercentage < 0 || dutyCyclePercentage > 1) 
@@ -158,7 +207,7 @@ public static class Robot {
     }
 
     /// <summary>
-    /// Reads puls in
+    /// Reads input pulses
     /// </summary>
     /// <param name="pin">The pin to read from</param>
     /// <param name="waitFor">Pin value to wait for</param>
