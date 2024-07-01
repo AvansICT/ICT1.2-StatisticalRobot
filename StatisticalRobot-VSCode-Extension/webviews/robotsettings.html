@@ -201,7 +201,10 @@
             <label for="input-wifi-password">Wifi Name</label>
             <input type="password" name="wifi-password" id="input-wifi-password" placeholder="(password)">
 
-            <button id="btn-connect-with-password">Connect</button>
+            <div class="button-container">
+                <button id="btn-connect-with-password">Connect</button>
+                <button id="btn-cancel-connect">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -279,6 +282,10 @@
             else {
                 if(wifiRequiresPassword) {
                     wifiPassword = await enterWifiPassword(apBySsid[wifiSsid]);
+
+                    if(!wifiPassword) {
+                        return;
+                    }
                 }
 
                 showPageLoading(true, `Robot is connecting to ${wifiSsid}...`);
@@ -672,6 +679,15 @@
 
                         resolve(result);
                     }, { once: true });
+
+                wifiPasswordOverlay.querySelector('#btn-cancel-connect')
+                    .addEventListener('click', (e) => {
+                        wifiPasswordOverlay.style.display = 'none';
+
+                        inputPassword.value = '';
+
+                        resolve(undefined);
+                    });
                 
                 wifiPasswordOverlay.style.display = '';
                 inputPassword.focus();

@@ -2,7 +2,7 @@
   "name": "avans-statisticalrobot",
   "displayName": "Avans-StatisticalRobot",
   "description": "VSCode extension for use with the Avans Statistical Robot",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "publisher": "avans-hogeschool-breda",
   "engines": {
     "vscode": "^1.89.0"
