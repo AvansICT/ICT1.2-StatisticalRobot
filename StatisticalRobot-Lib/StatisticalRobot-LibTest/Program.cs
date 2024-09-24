@@ -26,6 +26,10 @@ Robot.StartPwm();
 
 Robot.Wait(2000);
 
+I2CDisplay display = new I2CDisplay(0x3e);
+display.SetText("Hello World");
+
+
 while(!(buttonA && buttonB)) 
 {
     int[] humTempData = ReadDht11Data(18);
