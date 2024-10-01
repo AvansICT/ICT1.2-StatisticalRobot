@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>StatisticalRobot_Lib</RootNamespace>
+    <RootNamespace>Avans.StatisticalRobot</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PlatformTarget>ARM64</PlatformTarget>

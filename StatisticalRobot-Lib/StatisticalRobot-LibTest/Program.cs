@@ -2,6 +2,32 @@ using System.Device.Gpio;
 using System.Device.I2c;
 using Avans.StatisticalRobot;
 
+
+
+// Init
+var knipperLed = Devices.KnipperLed(10, 100);
+var tempHum = Devices.TemperatuurEnLuchtvochtigheidSensor(9);
+// var knipperLed = new KnipperLed(10, 100);
+
+// var timer = new Timer(100);
+
+while(true) {
+    knipperLed.Update();
+
+
+    // TODO: Boebot Timer
+    // if(timer.Tick) {
+    //     int[] tempMeting = tempHum.GetTemperatureAndHumidity();
+    //     SetText($"Hum = {tempMeting[0]}.{tempMeting[1]} %\nTemp = {tempMeting[2]}.{tempMeting[3]} C");
+    // }
+    
+
+
+    Robot.Wait(1);
+}
+
+
+
 Robot.Wait(100);
 
 I2cDevice textDevice = Robot.CreateI2cDevice(0x3e);
