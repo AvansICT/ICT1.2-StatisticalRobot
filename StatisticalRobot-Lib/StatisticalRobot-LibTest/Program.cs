@@ -1,27 +1,30 @@
 using System.Device.Gpio;
 using System.Device.I2c;
+using System.Globalization;
 using Avans.StatisticalRobot;
 
 
 
 // Init
 var knipperLed = Devices.KnipperLed(10, 100);
-var tempHum = Devices.TemperatuurEnLuchtvochtigheidSensor(9);
+var temperatuurSensor = Devices.TemperatuurEnLuchtvochtigheidSensor(9);
 // var knipperLed = new KnipperLed(10, 100);
 
-// var timer = new Timer(100);
+var temperatuurTimer = new PeriodeTimer(100);
 
 while(true) {
     knipperLed.Update();
 
+    if(temperatuurTimer.Check())
+    {
+        int[] tempMeting = temperatuurSensor.GetTemperatureAndHumidity();
 
-    // TODO: Boebot Timer
-    // if(timer.Tick) {
-    //     int[] tempMeting = tempHum.GetTemperatureAndHumidity();
-    //     SetText($"Hum = {tempMeting[0]}.{tempMeting[1]} %\nTemp = {tempMeting[2]}.{tempMeting[3]} C");
-    // }
-    
+        decimal temperatuur = decimal.Parse($"{tempMeting[2]}.{tempMeting[3]}", CultureInfo.InvariantCulture);
+        decimal luchtvochtigheid = decimal.Parse($"{tempMeting[0]}.{tempMeting[1]}", CultureInfo.InvariantCulture);
 
+        Console.WriteLine($"Temp = {temperatuur} C");
+        Console.WriteLine($"Hum = {luchtvochtigheid}%");
+    }
 
     Robot.Wait(1);
 }
