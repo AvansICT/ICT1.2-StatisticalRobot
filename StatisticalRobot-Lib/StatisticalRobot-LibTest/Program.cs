@@ -23,7 +23,7 @@ while(true) {
         decimal luchtvochtigheid = decimal.Parse($"{tempMeting[0]}.{tempMeting[1]}", CultureInfo.InvariantCulture);
 
         Console.WriteLine($"Temp = {temperatuur} C");
-        Console.WriteLine($"Hum = {luchtvochtigheid}%%");
+        Console.WriteLine($"Hum = {luchtvochtigheid}%");
     }
 
     Robot.Wait(1);
