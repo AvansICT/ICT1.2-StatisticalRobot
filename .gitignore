@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/ICT1.2-StatisticalRobot/v17
+/StatisticalRobot-Lib/.vs/StatisticalRobot-Lib/v17
+/StatisticalRobot-Lib/.vs/StatisticalRobot-Lib/FileContentIndex
