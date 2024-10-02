@@ -1,12 +1,15 @@
 
-using System.Device.Gpio;
-using System.Runtime.InteropServices;
 using Avans.StatisticalRobot;
+using System.Device.Gpio;
 
 public class DHT11 {
 
     private readonly int pin;
-
+    /// <summary>
+    /// Dit is een analoge device
+    /// 3.3V/5V
+    /// </summary>
+    /// <param name="pin"></param>
     public DHT11(int pin) 
     {
         Robot.SetDigitalPinMode(pin, PinMode.Output);

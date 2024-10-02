@@ -1,18 +1,26 @@
 // Init
 var knipperLed = Devices.KnipperLed(10, 100);
-var tempHum = Devices.TemperatuurEnLuchtvochtigheidSensor(9);
+var tempHumidity = Devices.TemperatuurEnLuchtvochtigheidSensor(9);
 var textDevice = Devices.LCD16x2(0x3e);
+var ultraSonic = Devices.Ultrasonic(18);
 
-PeriodTimer periodTimerHum = new(1001);
+PeriodTimer periodTimerHumidity = new(1001);
+PeriodTimer periodTimerUltrasonic = new(1000);
 
 while (true)
 {
     knipperLed.Update();
 
-    if (periodTimerHum.Check())
+    if (periodTimerHumidity.Check())
     {
-        int[] tempMeting = tempHum.GetTemperatureAndHumidity();
+        int[] tempMeting = tempHumidity.GetTemperatureAndHumidity();
         textDevice.SetText($"Hum = {tempMeting[0]}.{tempMeting[1]} %\nTemp = {tempMeting[2]}.{tempMeting[3]} C");
+    }
+
+    if (periodTimerUltrasonic.Check())
+    {
+        int afstandMeting = ultraSonic.GetUltrasoneDistance();
+        Console.WriteLine("De afstand is: {0}", afstandMeting);
     }
 
     Robot.Wait(1);
@@ -112,18 +120,3 @@ while (true)
 //Console.WriteLine("The loop has ended");
 
 //Console.ReadLine();
-
-
-//static int GetUltrasoneDistance(int pin)
-//{
-//    Robot.SetDigitalPinMode(pin, PinMode.Output);
-//    Robot.WriteDigitalPin(pin, PinValue.Low);
-//    Robot.Wait(1);
-//    Robot.WriteDigitalPin(pin, PinValue.High);
-//    Robot.WaitUs(10);
-//    Robot.WriteDigitalPin(pin, PinValue.Low);
-
-//    Robot.SetDigitalPinMode(pin, PinMode.Input);
-//    int pulse = Robot.PulseIn(pin, PinValue.High, 50);
-//    return pulse/29/2;
-//}

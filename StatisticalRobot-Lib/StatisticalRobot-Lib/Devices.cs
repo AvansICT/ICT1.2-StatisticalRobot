@@ -18,4 +18,9 @@ public class Devices
         return new LCD16x2(address);
     }
 
+    public static Ultrasonic Ultrasonic(int pin)
+    {
+        return new Ultrasonic(pin);
+    }
+
 }

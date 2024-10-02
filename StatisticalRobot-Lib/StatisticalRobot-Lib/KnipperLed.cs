@@ -9,6 +9,12 @@ public class KnipperLed : IUpdatable
     public int PinLed { get; }
     public int MsKnipper { get; }
 
+    /// <summary>
+    /// Dit is een digitaal device
+    /// 3.3V/5V
+    /// </summary>
+    /// <param name="pinLed"></param>
+    /// <param name="msKnipper"></param>
     public KnipperLed(int pinLed, int msKnipper)
     {
         Robot.SetDigitalPinMode(pinLed, PinMode.Output);

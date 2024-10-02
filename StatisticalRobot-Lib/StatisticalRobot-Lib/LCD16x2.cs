@@ -6,6 +6,11 @@ namespace Avans.StatisticalRobot
     {
         private I2cDevice Device { get; }
 
+        /// <summary>
+        /// Dit is een I2C device
+        /// 3.3V/5V
+        /// </summary>
+        /// <param name="address"></param>
         public LCD16x2(byte address)
         {
             this.Device = Robot.CreateI2cDevice(address);
