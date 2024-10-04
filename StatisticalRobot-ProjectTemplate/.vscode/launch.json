@@ -24,7 +24,8 @@
                     "rompi@${command:avans-statisticalrobot.connectedRobotIpAddress}"
                 ],
                 "debuggerPath": "/opt/vsdbg/vsdbg"
-            }
+            },
+            "internalConsoleOptions": "openOnSessionStart"
         }
     ]
 }
