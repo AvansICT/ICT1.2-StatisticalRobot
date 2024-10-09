@@ -7,9 +7,9 @@ public class Devices
     {
         return new KnipperLed(pinLed, msKnipper);
     }
-    public static Button Button(int pin)
+    public static Button Button(int pin, bool defHigh = false)
     {
-        return new Button(pin);
+        return new Button(pin, defHigh);
     }
 
     public static DHT11 TemperatuurEnLuchtvochtigheidSensor(int pinNummer)
