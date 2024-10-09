@@ -12,7 +12,7 @@ public static class Robot {
     private static I2cBus i2cBus = I2cBus.Create(1);
     private static I2cDevice romi32u4 = i2cBus.CreateDevice(20);
     private static I2cDevice grovePiAnalog = i2cBus.CreateDevice(8);
-    private static GpioController gpioController = new GpioController();
+    private static GpioController gpioController = new();
     private static PwmChannel? pwm;
     private static long stopwatchTicksPerUs = (long)(Stopwatch.Frequency * 0.000_001);
 
@@ -211,10 +211,10 @@ public static class Robot {
     /// </summary>
     /// <param name="pin">The pin to read from</param>
     /// <param name="waitFor">Pin value to wait for</param>
-    /// <param name="timeoutUs">Timeout in microseconds</param>
+    /// <param name="timeoutms">Timeout in milliseconds</param>
     /// <returns>-2 if pinstate invalid, -1 if timeout, 0 if timeout during pulse read</returns>
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    public static int PulseIn(int pin, PinValue waitFor, int timeoutMillis)
+    public static int PulseIn(int pin, PinValue waitFor, int timeoutms)
     {
         if(gpioController.Read(pin) == waitFor) 
         {
@@ -224,23 +224,23 @@ public static class Robot {
         Stopwatch timeoutTimer = Stopwatch.StartNew();
 
         PinValue notWaitFor = !waitFor;
-        while(gpioController.Read(pin) == notWaitFor && timeoutTimer.ElapsedMilliseconds < timeoutMillis)
+        while(gpioController.Read(pin) == notWaitFor && timeoutTimer.ElapsedMilliseconds < timeoutms)
         {
             // Wait for pulse
         }
 
-        if(timeoutTimer.ElapsedMilliseconds >= timeoutMillis) {
+        if(timeoutTimer.ElapsedMilliseconds >= timeoutms) {
             return -1;
         }
 
         Stopwatch pulseTimer = Stopwatch.StartNew();
-        while(gpioController.Read(pin) == PinValue.High && timeoutTimer.ElapsedMilliseconds < timeoutMillis) 
+        while(gpioController.Read(pin) == PinValue.High && timeoutTimer.ElapsedMilliseconds < timeoutms) 
         {
             // Wait
         }
         pulseTimer.Stop();
 
-        if(timeoutTimer.ElapsedMilliseconds >= timeoutMillis) {
+        if(timeoutTimer.ElapsedMilliseconds >= timeoutms) {
             return 0;
         }
 
@@ -260,8 +260,8 @@ public static class Robot {
         } while (nowTicks - startTicks < durationTicks);
     }
 
-    public static void Wait(int millis)
+    public static void Wait(int ms)
     {
-        Thread.Sleep(millis);
+        Thread.Sleep(ms);
     }
 }

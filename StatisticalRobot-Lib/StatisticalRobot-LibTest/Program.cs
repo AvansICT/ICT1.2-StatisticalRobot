@@ -1,27 +1,28 @@
 // Init
-var knipperLed = Devices.KnipperLed(10, 100);
-var tempHumidity = Devices.TemperatuurEnLuchtvochtigheidSensor(9);
-var textDevice = Devices.LCD16x2(0x3e);
-var ultraSonic = Devices.Ultrasonic(18);
 
-PeriodTimer periodTimerHumidity = new(1001);
-PeriodTimer periodTimerUltrasonic = new(1000);
+var knipperLed = Devices.KnipperLed(5, 100);
+//var tempHumidity = Devices.TemperatuurEnLuchtvochtigheidSensor(9);
+//var textDevice = Devices.LCD16x2(0x3e);
+//var ultraSonic = Devices.Ultrasonic(18);
+
+//PeriodTimer periodTimerHumidity = new(1001);
+//PeriodTimer periodTimerUltrasonic = new(1000);
 
 while (true)
 {
     knipperLed.Update();
 
-    if (periodTimerHumidity.Check())
-    {
-        int[] tempMeting = tempHumidity.GetTemperatureAndHumidity();
-        textDevice.SetText($"Hum = {tempMeting[0]}.{tempMeting[1]} %\nTemp = {tempMeting[2]}.{tempMeting[3]} C");
-    }
+    // if (periodTimerHumidity.Check())
+    // {
+    //     int[] tempMeting = tempHumidity.GetTemperatureAndHumidity();
+    //     textDevice.SetText($"Hum = {tempMeting[0]}.{tempMeting[1]} %\nTemp = {tempMeting[2]}.{tempMeting[3]} C");
+    // }
 
-    if (periodTimerUltrasonic.Check())
-    {
-        int afstandMeting = ultraSonic.GetUltrasoneDistance();
-        Console.WriteLine("De afstand is: {0}", afstandMeting);
-    }
+    // if (periodTimerUltrasonic.Check())
+    // {
+    //     int afstandMeting = ultraSonic.GetUltrasoneDistance();
+    //     Console.WriteLine("De afstand is: {0}", afstandMeting);
+    // }
 
     Robot.Wait(1);
 }

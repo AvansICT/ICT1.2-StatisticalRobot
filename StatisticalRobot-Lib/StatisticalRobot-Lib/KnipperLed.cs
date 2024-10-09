@@ -1,4 +1,3 @@
-
 using System.Device.Gpio;
 
 namespace Avans.StatisticalRobot;
@@ -6,8 +5,8 @@ namespace Avans.StatisticalRobot;
 public class KnipperLed : IUpdatable
 {
 
-    public int PinLed { get; }
-    public int MsKnipper { get; }
+    private int PinLed { get; }
+    private int MsKnipper { get; }
 
     /// <summary>
     /// Dit is een digitaal device
@@ -22,7 +21,7 @@ public class KnipperLed : IUpdatable
         MsKnipper = msKnipper;
     }
 
-    private DateTime laatsteKnipper = new DateTime();
+    private DateTime laatsteKnipper = new();
     private PinValue ledState = PinValue.Low;
 
     public void Update()
@@ -32,12 +31,5 @@ public class KnipperLed : IUpdatable
             Robot.WriteDigitalPin(this.PinLed, ledState);
             laatsteKnipper = DateTime.Now;
         }
-
-        // while(true) {
-        //     Robot.WriteDigitalPin(this.PinLed, PinValue.High);
-        //     Robot.Wait(this.MsKnipper);
-        //     Robot.WriteDigitalPin(this.PinLed, PinValue.Low);
-        //     Robot.Wait(this.MsKnipper);
-        // }
     }
 }
