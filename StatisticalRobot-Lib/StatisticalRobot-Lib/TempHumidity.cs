@@ -2,7 +2,7 @@
 using Avans.StatisticalRobot;
 using System.Device.Gpio;
 
-public class DHT11
+public class TempHumidity
 {
     private readonly int _pin;
 
@@ -10,8 +10,8 @@ public class DHT11
     /// This is a digital device
     /// 3.3V/5V
     /// </summary>
-    /// <param name="pin"></param>
-    public DHT11(int pin) 
+    /// <param name="pin">pin number</param>
+    public TempHumidity(int pin) 
     {
         Robot.SetDigitalPinMode(pin, PinMode.Output);
         _pin = pin;

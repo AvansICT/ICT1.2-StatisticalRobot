@@ -1,4 +1,3 @@
-
 using System.Device.Gpio;
 
 namespace Avans.StatisticalRobot;
@@ -13,7 +12,7 @@ public class Button
     /// 3.3V/5V
     /// </summary>
     /// <param name="pin"></param>
-    /// <param name="defHigh">button has default behaviour HIGH</param>
+    /// <param name="defHigh">button has default behaviour: HIGH</param>
     public Button(int pin, bool defHigh = false)
     {
         Robot.SetDigitalPinMode(pin, PinMode.Input);

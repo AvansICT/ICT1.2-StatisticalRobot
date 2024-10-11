@@ -1,7 +1,7 @@
 // Init
 
-var knipperLed = Devices.KnipperLed(5, 100);
-//var tempHumidity = Devices.TemperatuurEnLuchtvochtigheidSensor(9);
+var knipperLed = Devices.BlinkLed(5, 100);
+//var tempHumidity = Devices.TempAndHumidity(9);
 //var textDevice = Devices.LCD16x2(0x3e);
 //var ultraSonic = Devices.Ultrasonic(18);
 

@@ -3,7 +3,6 @@ using System.Device.I2c;
 using System.Device.Pwm;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Security.Principal;
 
 namespace Avans.StatisticalRobot;
 
