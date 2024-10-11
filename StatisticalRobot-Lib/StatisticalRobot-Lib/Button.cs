@@ -11,7 +11,7 @@ public class Button
     /// This is a digital device
     /// 3.3V/5V
     /// </summary>
-    /// <param name="pin"></param>
+    /// <param name="pin">Pin number on grove board</param>
     /// <param name="defHigh">button has default behaviour: HIGH</param>
     public Button(int pin, bool defHigh = false)
     {

@@ -11,7 +11,7 @@ public class BlinkLed : IUpdatable
     /// This is a digital device
     /// 3.3V/5V
     /// </summary>
-    /// <param name="pin"></param>
+    /// <param name="pin">Pin number on grove board</param>
     /// <param name="msBlink">Time in milliseconds</param>
     public BlinkLed(int pin, int msBlink)
     {
