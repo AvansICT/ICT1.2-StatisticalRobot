@@ -66,4 +66,17 @@ public class Devices
         return new Ultrasonic(pin);
     }
 
+    /// <summary>
+    /// This is a analog device
+    /// 3.3V/5V
+    /// Maxlux detected: 350lux
+    /// Responsetime: 20 ~ 30 milliseconds
+    /// Peak wavelength: 540 nm
+    /// </summary>
+    /// <param name="pin">Pin number on grove board</param>
+    public static LightSensor LightSensor(byte pin, int intervalms)
+    {
+        return new LightSensor(pin, intervalms);
+    }
+
 }
