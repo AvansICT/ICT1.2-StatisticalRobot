@@ -4,7 +4,7 @@ using System.Device.I2c;
 /// <summary>
 /// Makes it possible to specify what data needs to be read or written to what register
 /// </summary>
-public static class I2CDeviceExtensions
+public static class I2cDeviceExtensions
 {
     public static void WriteRegister(this I2cDevice device, byte register) {
         device.Write([ register ]);

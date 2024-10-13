@@ -141,7 +141,7 @@ public static class Robot {
 
     public static I2cDevice CreateI2cDevice(byte address) 
     {
-        return Robot.i2cBus.CreateDevice(address);
+        return i2cBus.CreateDevice(address);
     } 
 
     public static void SetDigitalPinMode(int pinNumber,PinMode state)

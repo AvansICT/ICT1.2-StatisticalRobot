@@ -1,4 +1,5 @@
 using System.Device.Gpio;
+using Avans.StatisticalRobot.Interfaces;
 
 namespace Avans.StatisticalRobot;
 

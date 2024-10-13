@@ -1,5 +1,4 @@
-
-namespace Avans.StatisticalRobot;
+namespace Avans.StatisticalRobot.Interfaces;
 
 public interface IUpdatable
 {

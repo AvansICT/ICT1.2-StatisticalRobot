@@ -1,9 +1,9 @@
 // Init
 
-var knipperLed = Devices.BlinkLed(5, 100);
-//var tempHumidity = Devices.TempAndHumidity(9);
-//var textDevice = Devices.LCD16x2(0x3e);
-//var ultraSonic = Devices.Ultrasonic(18);
+var knipperLed = Devices.Digital.BlinkLed(5, 100);
+var tempHumidity = Devices.Digital.TempHumidity(9);
+var textDevice = Devices.I2c.LCD16x2(0x3e);
+var ultraSonic = Devices.Digital.Ultrasonic(18);
 
 //PeriodTimer periodTimerHumidity = new(1001);
 //PeriodTimer periodTimerUltrasonic = new(1000);
