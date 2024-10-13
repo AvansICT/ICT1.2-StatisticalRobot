@@ -12,6 +12,7 @@ public class Devices
         /// Peak wavelength: 540 nm
         /// </summary>
         /// <param name="pin">Pin number on grove board</param>
+        /// <param name="intervalms">Time between measures in milliseconds</param>
         public static LightSensor LightSensor(byte pin, int intervalms)
         {
             return new LightSensor(pin, intervalms);
@@ -68,6 +69,20 @@ public class Devices
         {
             return new Ultrasonic(pin);
         }
+
+        /// <summary>
+        /// 3.3V/5V
+        /// Max Distance:2-5m (2m by default)
+        /// Angle: X=110° Y=90°
+        /// </summary>
+        /// <param name="pin">Pin number on grove board</param>
+        /// <param name="intervalms">Time between measures in milliseconds</param>
+        /// <param name="alerttime">Time to use for alerting after detection in milliseconds</param>
+        public static PIRMotion PIRMotion(int pin, int intervalms, int alerttime)
+        {
+            return new PIRMotion(pin, intervalms, alerttime);
+        }
+
     }
 
     public class I2c
