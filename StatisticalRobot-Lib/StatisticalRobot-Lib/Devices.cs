@@ -83,6 +83,17 @@ public class Devices
             return new PIRMotion(pin, intervalms, alerttime);
         }
 
+        /// <summary>
+        /// This is a digital device
+        /// 3.3V/5V
+        /// Distance: 0 - 4.5 cm (best height is 1.2 cm)
+        /// </summary>
+        /// <param name="pin">Pin number on grove board</param>
+        public static InfraredReflective InfraredReflective(int pin)
+        {
+            return new InfraredReflective(pin);
+        }
+
     }
 
     public class I2c
