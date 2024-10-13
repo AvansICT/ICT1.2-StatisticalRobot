@@ -49,9 +49,9 @@ public static class Robot {
     }
     
     /// <summary>
-    /// Writes byte to specefic adress
+    /// Writes bytes to specific address
     /// </summary>
-    /// <param name="address">Register adress</param>
+    /// <param name="address">Register address</param>
     /// <param name="data">Byte list</param>
     private static void WriteRaw(int address, byte[] data) 
     {
