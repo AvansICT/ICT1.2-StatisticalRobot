@@ -1,3 +1,4 @@
+using System.Device;
 using System.Device.Gpio;
 using System.Device.I2c;
 using System.Device.Pwm;
@@ -9,11 +10,49 @@ namespace Avans.StatisticalRobot;
 public static class Robot {
 
     private static I2cBus i2cBus = I2cBus.Create(1);
-    private static I2cDevice romi32u4 = i2cBus.CreateDevice(20);
-    private static I2cDevice grovePiAnalog = i2cBus.CreateDevice(8);
+    private static I2cDevice romi32u4 = i2cBus.CreateDevice(0x14);
+    //This is the address 0x04 for the grovePi
+    private static I2cDevice grovePiAnalog = i2cBus.CreateDevice(0x08);
+
     private static GpioController gpioController = new();
     private static PwmChannel? pwm;
     private static long stopwatchTicksPerUs = (long)(Stopwatch.Frequency * 0.000_001);
+
+    static Robot()
+    {
+        try
+        {
+            grovePiAnalog.WriteByte(0x01);
+
+        }
+        catch (Exception ex)
+        {
+            i2cBus.RemoveDevice(0x08);
+            grovePiAnalog = null;
+            Console.WriteLine("0x08: " + ex.Message);
+            
+        }
+
+        if (grovePiAnalog == null)
+        {
+            grovePiAnalog = i2cBus.CreateDevice(0x04);
+            try
+            {
+                grovePiAnalog.WriteByte(0x01);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("0x04 : " + ex.Message);
+                grovePiAnalog = null;
+            }
+        }
+    }
+
+    //private static bool TestDevice(int d)
+    //{
+
+    //}
 
     /// <summary>
     /// Reads data from Romi based on struct format
@@ -24,6 +63,7 @@ public static class Robot {
     /// <returns>A formatted list of objects</returns>
     private static object[] ReadUnpack(int address, int size, string format)
     {
+        
         romi32u4.WriteByte((byte)address);
         Thread.Sleep(1);
 
@@ -47,7 +87,13 @@ public static class Robot {
         romi32u4.Write(writeBuffer);
         Thread.Sleep(1); 
     }
-    
+
+    public static ComponentInformation GetQueryComponentInformation()
+    {
+
+        return i2cBus.QueryComponentInformation();
+    }
+
     /// <summary>
     /// Writes byte to specefic adress
     /// </summary>
