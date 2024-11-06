@@ -116,7 +116,7 @@ public static class Robot {
     /// <param name="green">Value between 0-255</param>
     public static void LEDs(byte red, byte yellow, byte green)
     {
-        WritePack(0,"BBB",red,yellow,green);
+        WriteRaw(0, [yellow, green, red]);
     }
 
     /// <summary>
