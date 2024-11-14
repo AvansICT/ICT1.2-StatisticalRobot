@@ -20,21 +20,8 @@ public class Button
         _defHigh = defHigh;
     }
 
-    private DateTime syncTime = new();
-    private PinValue state;
-
-    private void Update()
-    {
-        if (DateTime.Now - syncTime > TimeSpan.FromMilliseconds(250))
-        {
-            state = Robot.ReadDigitalPin(_pin);
-            syncTime = DateTime.Now;
-        }
-    }
-
     public string GetState()
     {
-        Update();
-        return (state == PinValue.High && _defHigh) ? "Released" : "Pressed";
+        return (Robot.ReadDigitalPin(_pin) == PinValue.High) ? "Released" : "Pressed";
     }
 }
