@@ -94,6 +94,18 @@ public class Devices
             return new InfraredReflective(pin);
         }
 
+        /// <summary>
+        /// This is a digital device
+        /// Beeps (On/Off)
+        /// 3.3V/5V
+        /// Resonant Frequency: 2300±300Hz
+        /// </summary>
+        /// <param name="pin">Pin number on grove board</param>
+        /// <param name="intervalms">Time in milliseconds between beeps</param>
+        public static Buzzer Buzzer(int pin, int intervalms)
+        {
+            return new Buzzer(pin, intervalms);
+        }
     }
 
     public class I2c
