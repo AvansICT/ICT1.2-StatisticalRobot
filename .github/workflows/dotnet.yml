@@ -1,5 +1,5 @@
 # Build the robot lib and create a package. When succesful publish it to nuget
-name: .NET
+name: build and publish StatisticalRobot-Lib 
 
 on:
   workflow_dispatch:
