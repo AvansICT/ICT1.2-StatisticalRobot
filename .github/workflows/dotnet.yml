@@ -1,0 +1,33 @@
+# Build the robot lib and create a package. When succesful publish it to nuget
+name: .NET
+
+on:
+  workflow_dispatch:
+# uncomment this when figured out how to increment nuget version in CI
+# (can't publish nuget package with same version, needs to be modified in csproj file. Option: use SED in pipeline?)
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore StatisticalRobot-Lib/StatisticalRobot-Lib/StatisticalRobot-Lib.csproj
+    - name: Build
+      run: dotnet build -c Release --no-restore StatisticalRobot-Lib/StatisticalRobot-Lib/StatisticalRobot-Lib.csproj
+#    - name: Test # TODO: add some basic tests. For now skip this step :/
+#      run: dotnet test -c Release --no-build --verbosity normal
+    - name: Pack services
+      run: dotnet pack -c Release --no-build Services --output . StatisticalRobot-Lib/StatisticalRobot-Lib/StatisticalRobot-Lib.csproj
+    - name: Push to NuGet
+      run: dotnet nuget push "*.nupkg" --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
