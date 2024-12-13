@@ -7,7 +7,7 @@ namespace Avans.StatisticalRobot
 
     public class RGBSensor
     {
-        private const byte TCS34725_ADDRESS = 0x29;
+        const byte RGBSENSOR_DEFAULT_ADDRESS = 0x29;
         private const byte TCS34725_COMMAND_BIT = 0x80;
         private const byte TCS34725_ENABLE = 0x00;
         private const byte TCS34725_ENABLE_PON = 0x01;
@@ -19,6 +19,13 @@ namespace Avans.StatisticalRobot
         private const byte TCS34725_RDATAL = 0x16;
         private const byte TCS34725_GDATAL = 0x18;
         private const byte TCS34725_BDATAL = 0x1A;
+
+        const byte INTEGRATION_TIME_2_4MS = 0xFF;
+        const byte INTEGRATION_TIME_24MS = 0xF6;
+        const byte INTEGRATION_TIME_50MS = 0xEB;
+        const byte INTEGRATION_TIME_101MS = 0xD5;
+        const byte INTEGRATION_TIME_154MS = 0xC0;
+        const byte INTEGRATION_TIME_700MS = 0x00;
 
         private I2cDevice _device;
         private bool _initialized;
@@ -102,6 +109,31 @@ namespace Avans.StatisticalRobot
 
         }
 
+        private void SleepForIntegrationTime()
+        {
+            switch (_integrationTime)
+            {
+                case INTEGRATION_TIME_2_4MS:
+                    Thread.Sleep(3);
+                    break;
+                case INTEGRATION_TIME_24MS:
+                    Thread.Sleep(24);
+                    break;
+                case INTEGRATION_TIME_50MS:
+                    Thread.Sleep(50);
+                    break;
+                case INTEGRATION_TIME_101MS:
+                    Thread.Sleep(101);
+                    break;
+                case INTEGRATION_TIME_154MS:
+                    Thread.Sleep(154);
+                    break;
+                case INTEGRATION_TIME_700MS:
+                    Thread.Sleep(700);
+                    break;
+            }
+        }
+
         public void GetRawData(out ushort r, out ushort g, out ushort b, out ushort c)
         {
             if (!_initialized)
@@ -113,27 +145,7 @@ namespace Avans.StatisticalRobot
             g = Read16(TCS34725_GDATAL);
             b = Read16(TCS34725_BDATAL);
 
-            switch (_integrationTime)
-            {
-                case 0xFF: // TCS34725_INTEGRATIONTIME_2_4MS
-                    Thread.Sleep(3);
-                    break;
-                case 0xF6: // TCS34725_INTEGRATIONTIME_24MS
-                    Thread.Sleep(24);
-                    break;
-                case 0xEB: // TCS34725_INTEGRATIONTIME_50MS
-                    Thread.Sleep(50);
-                    break;
-                case 0xD5: // TCS34725_INTEGRATIONTIME_101MS
-                    Thread.Sleep(101);
-                    break;
-                case 0xC0: // TCS34725_INTEGRATIONTIME_154MS
-                    Thread.Sleep(154);
-                    break;
-                case 0x00: // TCS34725_INTEGRATIONTIME_700MS
-                    Thread.Sleep(700);
-                    break;
-            }
+            SleepForIntegrationTime();
         }
     }
 }
