@@ -8,7 +8,7 @@
     <PlatformTarget>ARM64</PlatformTarget>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Avans.StatisticalRobot</PackageId>
-    <Version>1.1.0-1</Version>
+    <Version>1.1.0-beta</Version>
     <Authors>Marcel</Authors>
     <Company>Avans Hogeschool</Company>    
   </PropertyGroup>
