@@ -5,9 +5,10 @@ using System.Device.I2c;
 namespace Avans.StatisticalRobot
 {
 
+
     public class RGBSensor
     {
-        const byte RGBSENSOR_DEFAULT_ADDRESS = 0x29;
+        public const byte DEFAULT_I2C_ADDRESS = 0x29;
         private const byte TCS34725_COMMAND_BIT = 0x80;
         private const byte TCS34725_ENABLE = 0x00;
         private const byte TCS34725_ENABLE_PON = 0x01;
@@ -20,19 +21,44 @@ namespace Avans.StatisticalRobot
         private const byte TCS34725_GDATAL = 0x18;
         private const byte TCS34725_BDATAL = 0x1A;
 
-        const byte INTEGRATION_TIME_2_4MS = 0xFF;
-        const byte INTEGRATION_TIME_24MS = 0xF6;
-        const byte INTEGRATION_TIME_50MS = 0xEB;
-        const byte INTEGRATION_TIME_101MS = 0xD5;
-        const byte INTEGRATION_TIME_154MS = 0xC0;
-        const byte INTEGRATION_TIME_700MS = 0x00;
+        public enum IntegrationTime : byte
+        {
+
+            INTEGRATION_TIME_2_4MS = 0xFF,
+            INTEGRATION_TIME_24MS = 0xF6,
+            INTEGRATION_TIME_50MS = 0xEB,
+            INTEGRATION_TIME_101MS = 0xD5,
+            INTEGRATION_TIME_154MS = 0xC0,
+            INTEGRATION_TIME_700MS = 0x00
+        }
+
+        public enum Gain : byte
+        {
+            GAIN_1X = 0x00,   /**<  No gain  */
+            GAIN_4X = 0x01,   /**<  4x gain  */
+            GAIN_16X = 0x02,   /**<  16x gain */
+            GAIN_60X = 0x03    /**<  60x gain */
+        }
 
         private I2cDevice _device;
         private bool _initialized;
-        private byte _integrationTime;
-        private byte _gain;
+        private IntegrationTime _integrationTime;
+        private Gain _gain;
 
-        public RGBSensor(byte address, byte integrationTime, byte gain)
+        public RGBSensor(byte address)
+        {
+            _device = Robot.CreateI2cDevice(address);
+            _integrationTime = (byte)IntegrationTime.INTEGRATION_TIME_700MS;
+            _gain = (byte)Gain.GAIN_1X;
+            _initialized = false;
+        }
+        /// <summary>
+        /// This is a I2C device for reading RGB colors.
+        /// </summary>
+        /// <param name="address">I2C address of device</param>
+        /// <param name="integrationTime">Time the device takes after reading</param>
+        /// <param name="gain">Sets the sensitivity (not tested)</param>
+        public RGBSensor(byte address, IntegrationTime integrationTime, Gain gain)
         {
             _device = Robot.CreateI2cDevice(address);
             _integrationTime = integrationTime;
@@ -88,23 +114,23 @@ namespace Avans.StatisticalRobot
             return true;
         }
 
-        public void SetGain(byte gain)
+        public void SetGain(Gain gain)
         {
             if (!_initialized)
             {
                 Begin();
             }
-            Write8(TCS34725_CONTROL, gain);
+            Write8(TCS34725_CONTROL, (byte)gain);
             _gain = gain;
         }
 
-        public void SetIntegrationTime(byte integrationTime)
+        public void SetIntegrationTime(IntegrationTime integrationTime)
         {
             if (!_initialized)
             {
                 Begin();
             }
-            Write8(TCS34725_ATIME, integrationTime);
+            Write8(TCS34725_ATIME, (byte)integrationTime);
             _integrationTime = integrationTime;
 
         }
@@ -113,26 +139,36 @@ namespace Avans.StatisticalRobot
         {
             switch (_integrationTime)
             {
-                case INTEGRATION_TIME_2_4MS:
+                case IntegrationTime.INTEGRATION_TIME_2_4MS:
                     Thread.Sleep(3);
                     break;
-                case INTEGRATION_TIME_24MS:
+                case IntegrationTime.INTEGRATION_TIME_24MS:
                     Thread.Sleep(24);
                     break;
-                case INTEGRATION_TIME_50MS:
+                case IntegrationTime.INTEGRATION_TIME_50MS:
                     Thread.Sleep(50);
                     break;
-                case INTEGRATION_TIME_101MS:
+                case IntegrationTime.INTEGRATION_TIME_101MS:
                     Thread.Sleep(101);
                     break;
-                case INTEGRATION_TIME_154MS:
+                case IntegrationTime.INTEGRATION_TIME_154MS:
                     Thread.Sleep(154);
                     break;
-                case INTEGRATION_TIME_700MS:
+                case IntegrationTime.INTEGRATION_TIME_700MS:
                     Thread.Sleep(700);
                     break;
             }
         }
+
+
+        /// <summary>
+        /// GetRawData can be used to get data from the Sensor.
+        /// Be aware that this method uses the Integration time as set in the constructor after reading the data.
+        /// </summary>
+        /// <param name="r">returns the value of the RED channel</param>
+        /// <param name="g">returns the value of the GREEN channel</param>
+        /// <param name="b">returns the value of the BLUE channel</param>
+        /// <param name="c">returns the value of the CLEAR channel</param>
 
         public void GetRawData(out ushort r, out ushort g, out ushort b, out ushort c)
         {
