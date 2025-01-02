@@ -5,7 +5,7 @@ var tempHumidity = Devices.Digital.TempHumidity(9);
 var textDevice = Devices.I2c.LCD16x2(0x3e);
 var ultraSonic = Devices.Digital.Ultrasonic(18);
 
-RGBSensor rgbSensor = new RGBSensor(0x29, 0x00, 0x00); // IntegrationTime = 700ms (0x00), Gain = 1x (0x00)
+// RGBSensor rgbSensor = new RGBSensor(RGBSensor.DEFAULT_I2C_ADDRESS, RGBSensor.IntegrationTime.INTEGRATION_TIME_700MS, RGBSensor.Gain.GAIN_1X);
 
 //PeriodTimer periodTimerHumidity = new(1001);
 //PeriodTimer periodTimerUltrasonic = new(1000);
@@ -25,14 +25,10 @@ while (true)
     //     int afstandMeting = ultraSonic.GetUltrasoneDistance();
     //     Console.WriteLine("De afstand is: {0}", afstandMeting);
     // }
+    // rgbSensor.GetRawData(out ushort r, out ushort g, out ushort b, out ushort c);
+    // Console.WriteLine("Channels: r: " + r + " g: " + g + " b: " + b);
 
-    // MoistureSensor moistureSensor = new MoistureSensor(3);
-    ushort r;
-    ushort g;
-    ushort b;
-    ushort c;
-    rgbSensor.GetRawData(r, g, b, c);
-    Robot.Wait(1000);
+    Robot.Wait(1);
 }
 
 //int leftDistance;
